@@ -1,0 +1,4 @@
+# ninja log v7
+1	14073	1770750651596480582	/hy-tmp/FastGS-main/submodules/simple-knn/build/temp.linux-x86_64-cpython-311/simple_knn.o	bc570cc06a75754a
+0	24477	1770750651596480582	/hy-tmp/FastGS-main/submodules/simple-knn/build/temp.linux-x86_64-cpython-311/ext.o	ca7270049b4445ed
+1	46371	1770750651596480582	/hy-tmp/FastGS-main/submodules/simple-knn/build/temp.linux-x86_64-cpython-311/spatial.o	214d38912bf78573
