@@ -8,3 +8,9 @@ VLM-Instruct-FastGS (Vision-Language Model Guided 3D Gaussian Splatting) enhance
 - **Phase 3: Novel View Refinement** – Analyzes renders from unseen viewpoints to identify inconsistent or under-reconstructed regions, further improving rendering quality across the entire scene.
 
 This semantic-aware approach enables comprehensive scene reconstruction without requiring additional iterations or manual annotation.
+
+## 📊 Performance Comparison
+Starting from only 100 random points and after just 2,000 iterations, our method demonstrates significantly more complete scene reconstruction:
+
+<div align="center"> <table> <tr> <td width="20%"><strong>FastGS</strong></td> <td width="26.7%"><img src="assets/before_1.png" width="100%"></td> <td width="26.7%"><img src="assets/before_2.png" width="100%"></td> <td width="26.7%"><img src="assets/before_3.png" width="100%"></td> </tr> <tr> <td><strong>VLM-Instruct-FastGS (Ours)</strong></td> <td><img src="assets/after_1.png" width="100%"></td> <td><img src="assets/after_2.png" width="100%"></td> <td><img src="assets/after_3.png" width="100%"></td> </tr> </table> </div>
+With the same sparse initialization and iteration budget, VLM-Instruct-FastGS builds substantially more scene structure—particularly in background regions. The semantic guidance enables the model to allocate Gaussians more intelligently, resulting in more comprehensive scene coverage from the very early stages of training.
