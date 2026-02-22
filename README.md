@@ -49,11 +49,18 @@ CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=0 python train.py \
     --save_region_vis
 ```
 ### 📋 Command Line Arguments for train.py
-#### Semantic Guidance
+
+<details>
+<summary> Semantic Guidance</summary>
+
 ##### --semantic_num_samples
 Number of images to analyze each time (default: 5)
 
-#### Phase 1: Accelerated Detail Formation
+</details>
+
+<details>
+<summary> Phase 1: Accelerated Detail Formation</summary>
+
 ##### --phase1_start
 Phase 1 start iteration (default: 500)
 
@@ -66,7 +73,11 @@ Phase 1 interval between analyses (default: 500)
 ##### --phase1_max_points
 Phase 1 max points per view (default: 2000)
 
-#### Phase 2: Background Completion
+</details>
+
+<details>
+<summary> Phase 2: Background Completion</summary>
+
 ##### --phase2_start
 Phase 2 start iteration (default: 8000)
 
@@ -79,9 +90,15 @@ Phase 2 interval between analyses (default: 2000)
 ##### --phase2_max_points
 Phase 2 max points per view (default: 8000)
 
-#### Phase 3: Pruning & Refinement
+</details>
+
+<details>
+<summary> Phase 3: Pruning & Refinement</summary>
+
 ##### --prune_protection
 Iterations to protect after Phase 2 before pruning (default: 2000)
 
 ##### --total_iterations
 Total training iterations (default: 20000)
+
+</details>
