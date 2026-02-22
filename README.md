@@ -25,3 +25,17 @@ Phase 1 (0–8,000 iterations): Rapidly reconstructs main scene subjects.
 Phase 2 (8,000–14,000 iterations): Background Completion – Identifies and inverts main subject masks to target background areas, perfecting comprehensive scene coverage beyond foreground objects.
 
 Pruning & Refinement (14,000–20,000 iterations):  Prunes redundant Gaussians to reduce computational burden.
+
+## 🛠️ Preparation
+### Download VLM Model
+Download the [Qwen3-VL-2B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct) vision-language model and place it in the appropriate directory.
+### Dataset Structure
+Organize your single scene dataset as follows:
+```bash
+├── your_project/
+│   ├── images/
+│   ├── sparse/
+│       └── 0/
+│           ├── cameras.bin
+│           └── images.bin
+```
