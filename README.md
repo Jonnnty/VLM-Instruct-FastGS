@@ -39,3 +39,49 @@ Organize your single scene dataset as follows:
 │           ├── cameras.bin
 │           └── images.bin
 ```
+## 🚀 Training
+### Basic Training Command
+```bash
+CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=0 python train.py \
+    -s ./your_project \
+    -i images \
+    --qwen_model_path /path/to/Qwen3-VL-2B-Instruct \
+    --save_region_vis
+```
+### 📋 Command Line Arguments for train.py
+#### Semantic Guidance
+##### --semantic_num_samples
+Number of images to analyze each time (default: 5)
+
+#### Phase 1: Accelerated Detail Formation
+##### --phase1_start
+Phase 1 start iteration (default: 500)
+
+##### --phase1_end
+Phase 1 end iteration (default: 8000)
+
+##### --phase1_interval
+Phase 1 interval between analyses (default: 500)
+
+##### --phase1_max_points
+Phase 1 max points per view (default: 2000)
+
+#### Phase 2: Background Completion
+##### --phase2_start
+Phase 2 start iteration (default: 8000)
+
+##### --phase2_end
+Phase 2 end iteration (default: 14000)
+
+##### --phase2_interval
+Phase 2 interval between analyses (default: 2000)
+
+##### --phase2_max_points
+Phase 2 max points per view (default: 8000)
+
+#### Phase 3: Pruning & Refinement
+##### --prune_protection
+Iterations to protect after Phase 2 before pruning (default: 2000)
+
+##### --total_iterations
+Total training iterations (default: 20000)
