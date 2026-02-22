@@ -102,3 +102,7 @@ Iterations to protect after Phase 2 before pruning (default: 2000)
 Total training iterations (default: 20000)
 
 </details>
+
+## 🙏 Acknowledgements
+This project is built upon [3DGS](https://github.com/graphdeco-inria/gaussian-splatting), [FastGS](https://github.com/fastgs/FastGS/tree/main?tab=readme-ov-file), and [Qwen3-VL-2B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct). We extend our gratitude to all the authors for their outstanding contributions and excellent repositories!
+
