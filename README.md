@@ -54,7 +54,7 @@ CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=0 python train.py \
 <summary> Semantic Guidance</summary>
 
 ##### --semantic_num_samples
-Number of images to analyze each time (default: 5)
+Number of images to analyze each time 
 
 </details>
 
@@ -62,16 +62,16 @@ Number of images to analyze each time (default: 5)
 <summary> Phase 1: Accelerated Detail Formation</summary>
 
 ##### --phase1_start
-Phase 1 start iteration (default: 500)
+Phase 1 start iteration 
 
 ##### --phase1_end
-Phase 1 end iteration (default: 8000)
+Phase 1 end iteration 
 
 ##### --phase1_interval
-Phase 1 interval between analyses (default: 500)
+Phase 1 interval between analyses 
 
 ##### --phase1_max_points
-Phase 1 max points per view (default: 2000)
+Phase 1 max points per view 
 
 </details>
 
@@ -79,16 +79,16 @@ Phase 1 max points per view (default: 2000)
 <summary> Phase 2: Background Completion</summary>
 
 ##### --phase2_start
-Phase 2 start iteration (default: 8000)
+Phase 2 start iteration 
 
 ##### --phase2_end
-Phase 2 end iteration (default: 14000)
+Phase 2 end iteration 
 
 ##### --phase2_interval
-Phase 2 interval between analyses (default: 2000)
+Phase 2 interval between analyses
 
 ##### --phase2_max_points
-Phase 2 max points per view (default: 8000)
+Phase 2 max points per view 
 
 </details>
 
@@ -96,10 +96,10 @@ Phase 2 max points per view (default: 8000)
 <summary> Phase 3: Pruning & Refinement</summary>
 
 ##### --prune_protection
-Iterations to protect after Phase 2 before pruning (default: 2000)
+Iterations to protect after Phase 2 before pruning 
 
 ##### --total_iterations
-Total training iterations (default: 20000)
+Total training iterations 
 
 </details>
 
