@@ -42,11 +42,7 @@ Organize your single scene dataset as follows:
 ## 🚀 Training
 ### Basic Training Command
 ```bash
-CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=0 python train.py \
-    -s ./your_project \
-    -i images \
-    --qwen_model_path /path/to/Qwen3-VL-2B-Instruct \
-    --save_region_vis
+python train.py python train.py --source_path /path/to/your_project --model_path /path/to/output  --qwen_model_path /path/to/Qwen3-VL-2B-Instruct --save_region_vis
 ```
 ### ⚠️ Note:
 
