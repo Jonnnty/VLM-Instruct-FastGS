@@ -7,7 +7,7 @@ VLM-Instruct-FastGS enhances 3D Gaussian Splatting by incorporating semantic gui
 - **Phase 2: Background Completion** – Detects main subject regions using VLM understanding, then inverts these masks to obtain background areas requiring enhancement, ensuring full scene coverage.
 - **Phase 3: Novel View Refinement** – Analyzes renders from unseen viewpoints to identify inconsistent or under-reconstructed regions, further improving rendering quality across the entire scene.
 
-This semantic-aware approach enables comprehensive scene reconstruction without requiring additional iterations or manual annotation.
+This semantic-aware approach enables comprehensive scene reconstruction without requiring additional iterations or manual annotation—with its advantages being particularly pronounced under random sparse initialization and during early training stages.
 
 ## 📊 Performance Comparison
 Starting from only 100 random points and after 20,000 iterations, our method, powered by the [Qwen3-VL-2B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct) vision-language model, demonstrates significantly more complete scene reconstruction:
