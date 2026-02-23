@@ -93,7 +93,7 @@ Phase 2 max points per view
 </details>
 
 <details>
-<summary> Phase 3: Pruning & Refinement</summary>
+<summary> Pruning & Refinement</summary>
 
 ##### --prune_protection
 Iterations to protect after Phase 2 before pruning 
