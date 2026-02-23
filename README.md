@@ -48,6 +48,11 @@ CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=0 python train.py \
     --qwen_model_path /path/to/Qwen3-VL-2B-Instruct \
     --save_region_vis
 ```
+### Note:
+
+1.VLM inference introduces computational overhead—carefully balance phase intervals and sampling frequency to maintain efficiency.
+
+2.VLM predictions may produce overestimated region masks, potentially causing explosive Gaussian growth. Set appropriate _max_points limits per phase to control density.
 ### 📋 Command Line Arguments for train.py
 
 <details>
