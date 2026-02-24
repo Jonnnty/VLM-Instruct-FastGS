@@ -12,8 +12,7 @@ This semantic-aware approach enables comprehensive scene reconstruction without 
 ## 📊 Performance Comparison
 Starting from only 100 random points and after 20,000 iterations, our method, powered by the [Qwen3-VL-2B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct) vision-language model, demonstrates significantly more complete scene reconstruction:
 
-<div align="center"> <table> <tr> <td width="20%"><strong>FastGS</strong></td> <td width="26.7%"><img src="assets/before_1.png" width="100%"></td> <td width="26.7%"><img src="assets/before_2.png" width="100%"></td> <td width="26.7%"><img src="assets/before_3.png" width="100%"></td> </tr> <tr> <td><strong>VLM-Instruct-FastGS (Ours)</strong></td> <td><img src="assets/after_1.png" width="100%"></td> <td><img src="assets/after_2.png" width="100%"></td> <td><img src="assets/after_3.png" width="100%"></td> </tr> </table> </div>
-With the same sparse initialization and iteration budget, VLM-Instruct-FastGS builds substantially more scene structure—particularly in background regions. The semantic guidance enables the model to allocate Gaussians more intelligently, resulting in more comprehensive scene coverage from the very early stages of training.
+<div align="center"> <table> <tr> <td width="25%"><strong>Method</strong></td> <td width="37.5%"><strong>View 1</strong></td> <td width="37.5%"><strong>View 2</strong></td> </tr> <tr> <td><strong>FastGS</strong></td> <td><img src="assets/before_1.png" width="100%"></td> <td><img src="assets/before_2.png" width="100%"></td> </tr> <tr> <td><strong>VLM-Instruct-FastGS (Ours)</strong></td> <td><img src="assets/after_1.png" width="100%"></td> <td><img src="assets/after_2.png" width="100%"></td> </tr> </table> </div>
 
 ## 📊 Result
 We evaluate our method on the Mip-NeRF 360 dataset, comparing training loss convergence against vanilla FastGS under the same sparse initialization (100 random points)
