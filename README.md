@@ -1,6 +1,6 @@
 # VLM-Instruct-FastGS: Semantic Guidance for Complete Scene Reconstruction
 
-## 🚧 Still under editing...
+### 🚧 Still under editing...
 
 ## 📌 Overview
 VLM-Instruct-FastGS enhances 3D Gaussian Splatting by incorporating semantic guidance from Vision-Language Models (VLMs) into the densification process. Under the same sparse initialization and within the same number of iterations, our method achieves more complete scene reconstruction through a multi-stage semantic guidance strategy:
