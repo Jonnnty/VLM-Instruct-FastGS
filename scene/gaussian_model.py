@@ -3,7 +3,7 @@
 # GRAPHDECO research group, https://team.inria.fr/graphdeco
 # All rights reserved.
 #
-# This software is free for non-commercial, research and evaluation use 
+# This software is free for non-commercial, research and evaluation use
 # under the terms of the LICENSE.md file.
 #
 # For inquiries contact  george.drettakis@inria.fr
@@ -26,6 +26,7 @@ try:
 except:
     pass
 
+
 class GaussianModel:
 
     def setup_functions(self):
@@ -34,7 +35,7 @@ class GaussianModel:
             actual_covariance = L @ L.transpose(1, 2)
             symm = strip_symmetric(actual_covariance)
             return symm
-        
+
         self.scaling_activation = torch.exp
         self.scaling_inverse_activation = torch.log
 
@@ -53,7 +54,7 @@ class GaussianModel:
     def __init__(self, sh_degree, optimizer_type="default"):
         self.active_sh_degree = 0
         self.optimizer_type = optimizer_type
-        self.max_sh_degree = sh_degree  
+        self.max_sh_degree = sh_degree
         self._xyz = torch.empty(0)
         self._features_dc = torch.empty(0)
         self._features_rest = torch.empty(0)
@@ -75,53 +76,53 @@ class GaussianModel:
     def capture(self, optimizer_type):
         if optimizer_type == "default":
             return (
-            self.active_sh_degree,
-            self._xyz,
-            self._features_dc,
-            self._features_rest,
-            self._scaling,
-            self._rotation,
-            self._opacity,
-            self.max_radii2D,
-            self.xyz_gradient_accum,
-            self.xyz_gradient_accum_abs,
-            self.denom,
-            self.optimizer.state_dict(),
-            self.shoptimizer.state_dict(),
-            self.spatial_lr_scale,
-        )
+                self.active_sh_degree,
+                self._xyz,
+                self._features_dc,
+                self._features_rest,
+                self._scaling,
+                self._rotation,
+                self._opacity,
+                self.max_radii2D,
+                self.xyz_gradient_accum,
+                self.xyz_gradient_accum_abs,
+                self.denom,
+                self.optimizer.state_dict(),
+                self.shoptimizer.state_dict(),
+                self.spatial_lr_scale,
+            )
         else:
             return (
-            self.active_sh_degree,
-            self._xyz,
-            self._features_dc,
-            self._features_rest,
-            self._scaling,
-            self._rotation,
-            self._opacity,
-            self.max_radii2D,
-            self.xyz_gradient_accum,
-            self.xyz_gradient_accum_abs,
-            self.denom,
-            self.optimizer.state_dict(),
-            self.spatial_lr_scale,
-        )
-    
+                self.active_sh_degree,
+                self._xyz,
+                self._features_dc,
+                self._features_rest,
+                self._scaling,
+                self._rotation,
+                self._opacity,
+                self.max_radii2D,
+                self.xyz_gradient_accum,
+                self.xyz_gradient_accum_abs,
+                self.denom,
+                self.optimizer.state_dict(),
+                self.spatial_lr_scale,
+            )
+
     def restore(self, model_args, training_args):
-        (self.active_sh_degree, 
-        self._xyz, 
-        self._features_dc, 
-        self._features_rest,
-        self._scaling, 
-        self._rotation, 
-        self._opacity,
-        self.max_radii2D, 
-        xyz_gradient_accum,
-        xyz_gradient_accum_abs, 
-        denom,
-        opt_dict, 
-        shopt_dict,
-        self.spatial_lr_scale) = model_args
+        (self.active_sh_degree,
+         self._xyz,
+         self._features_dc,
+         self._features_rest,
+         self._scaling,
+         self._rotation,
+         self._opacity,
+         self.max_radii2D,
+         xyz_gradient_accum,
+         xyz_gradient_accum_abs,
+         denom,
+         opt_dict,
+         shopt_dict,
+         self.spatial_lr_scale) = model_args
         self.training_setup(training_args)
         self.xyz_gradient_accum = xyz_gradient_accum
         self.xyz_gradient_accum_abs = xyz_gradient_accum_abs
@@ -132,60 +133,61 @@ class GaussianModel:
     @property
     def get_scaling(self):
         return self.scaling_activation(self._scaling)
-    
+
     @property
     def get_rotation(self):
         return self.rotation_activation(self._rotation)
-    
+
     @property
     def get_xyz(self):
         return self._xyz
-    
+
     @property
     def get_features(self):
         features_dc = self._features_dc
         features_rest = self._features_rest
         return torch.cat((features_dc, features_rest), dim=1)
-    
+
     @property
     def get_features_dc(self):
         return self._features_dc
-    
+
     @property
     def get_features_rest(self):
         return self._features_rest
-    
+
     @property
     def get_opacity(self):
         return self.opacity_activation(self._opacity)
-    
-    def get_covariance(self, scaling_modifier = 1):
+
+    def get_covariance(self, scaling_modifier=1):
         return self.covariance_activation(self.get_scaling, scaling_modifier, self._rotation)
 
     def oneupSHdegree(self):
         if self.active_sh_degree < self.max_sh_degree:
             self.active_sh_degree += 1
 
-    def create_from_pcd(self, pcd : BasicPointCloud, spatial_lr_scale : float):
+    def create_from_pcd(self, pcd: BasicPointCloud, spatial_lr_scale: float):
         self.spatial_lr_scale = spatial_lr_scale
         fused_point_cloud = torch.tensor(np.asarray(pcd.points)).float().cuda()
         fused_color = RGB2SH(torch.tensor(np.asarray(pcd.colors)).float().cuda())
         features = torch.zeros((fused_color.shape[0], 3, (self.max_sh_degree + 1) ** 2)).float().cuda()
-        features[:, :3, 0 ] = fused_color
+        features[:, :3, 0] = fused_color
         features[:, 3:, 1:] = 0.0
 
         print("Number of points at initialisation : ", fused_point_cloud.shape[0])
 
         dist2 = torch.clamp_min(distCUDA2(torch.from_numpy(np.asarray(pcd.points)).float().cuda()), 0.0000001)
-        scales = torch.log(torch.sqrt(dist2))[...,None].repeat(1, 3)
+        scales = torch.log(torch.sqrt(dist2))[..., None].repeat(1, 3)
         rots = torch.zeros((fused_point_cloud.shape[0], 4), device="cuda")
         rots[:, 0] = 1
 
-        opacities = self.inverse_opacity_activation(0.1 * torch.ones((fused_point_cloud.shape[0], 1), dtype=torch.float, device="cuda"))
+        opacities = self.inverse_opacity_activation(
+            0.1 * torch.ones((fused_point_cloud.shape[0], 1), dtype=torch.float, device="cuda"))
 
         self._xyz = nn.Parameter(fused_point_cloud.requires_grad_(True))
-        self._features_dc = nn.Parameter(features[:,:,0:1].transpose(1, 2).contiguous().requires_grad_(True))
-        self._features_rest = nn.Parameter(features[:,:,1:].transpose(1, 2).contiguous().requires_grad_(True))
+        self._features_dc = nn.Parameter(features[:, :, 0:1].transpose(1, 2).contiguous().requires_grad_(True))
+        self._features_rest = nn.Parameter(features[:, :, 1:].transpose(1, 2).contiguous().requires_grad_(True))
         self._scaling = nn.Parameter(scales.requires_grad_(True))
         self._rotation = nn.Parameter(rots.requires_grad_(True))
         self._opacity = nn.Parameter(opacities.requires_grad_(True))
@@ -194,7 +196,7 @@ class GaussianModel:
     def create_random_initialization(self, num_points=100, spatial_lr_scale=1.0):
         """
         创建随机初始化的点云，用于没有提供PLY文件的情况
-        
+
         Args:
             num_points: 初始高斯点数量
             spatial_lr_scale: 空间学习率缩放因子
@@ -205,14 +207,17 @@ class GaussianModel:
         if hasattr(self, 'train_cameras') and self.train_cameras is not None and len(self.train_cameras) > 0:
             print(f"\n📷 Creating initial Gaussian model from camera frustums with {num_points} points")
             points = self._sample_from_camera_frustums(self.train_cameras, num_points)
-            
+
             # 添加初始化点统计信息
             print(f"\n📊 初始化点统计:")
             points_np = points.cpu().numpy()
             print(f"  - 点数: {num_points}")
-            print(f"  - X范围: [{points_np[:,0].min():.4f}, {points_np[:,0].max():.4f}] (跨度: {points_np[:,0].max() - points_np[:,0].min():.4f})")
-            print(f"  - Y范围: [{points_np[:,1].min():.4f}, {points_np[:,1].max():.4f}] (跨度: {points_np[:,1].max() - points_np[:,1].min():.4f})")
-            print(f"  - Z范围: [{points_np[:,2].min():.4f}, {points_np[:,2].max():.4f}] (跨度: {points_np[:,2].max() - points_np[:,2].min():.4f})")
+            print(
+                f"  - X范围: [{points_np[:, 0].min():.4f}, {points_np[:, 0].max():.4f}] (跨度: {points_np[:, 0].max() - points_np[:, 0].min():.4f})")
+            print(
+                f"  - Y范围: [{points_np[:, 1].min():.4f}, {points_np[:, 1].max():.4f}] (跨度: {points_np[:, 1].max() - points_np[:, 1].min():.4f})")
+            print(
+                f"  - Z范围: [{points_np[:, 2].min():.4f}, {points_np[:, 2].max():.4f}] (跨度: {points_np[:, 2].max() - points_np[:, 2].min():.4f})")
         else:
             print(f"\n📷 Creating random initial Gaussian model with {num_points} points (scene-based)")
             # 回退到基于场景范围的随机采样
@@ -246,7 +251,7 @@ class GaussianModel:
         self._rotation = nn.Parameter(rots.requires_grad_(True))
         self._opacity = nn.Parameter(opacities.requires_grad_(True))
         self.max_radii2D = torch.zeros((self.get_xyz.shape[0]), device="cuda")
-        
+
         print(f"\n✅ Random initialization complete: {num_points} points created")
         print(f"  - 缩放值范围: [{torch.exp(scales).min():.6f}, {torch.exp(scales).max():.6f}]")
         print(f"  - 不透明度范围: [{torch.sigmoid(opacities).min():.4f}, {torch.sigmoid(opacities).max():.4f}]")
@@ -254,10 +259,10 @@ class GaussianModel:
     def _sample_from_camera_frustums(self, cameras, num_points):
         """在相机视锥体内采样点"""
         import numpy as np
-        
+
         points_list = []
         num_cameras = len(cameras)
-        
+
         if num_cameras < 2:
             print("Warning: Less than 2 cameras available, falling back to simple random sampling")
             scale = self.spatial_lr_scale * 0.5
@@ -275,23 +280,27 @@ class GaussianModel:
                 elif hasattr(cam, 'T') and cam.T is not None:
                     # 从 R 和 T 计算相机中心
                     if hasattr(cam, 'R') and cam.R is not None:
-                        R = cam.R if isinstance(cam.R, torch.Tensor) else torch.tensor(cam.R, device="cuda", dtype=torch.float32)
-                        T = cam.T if isinstance(cam.T, torch.Tensor) else torch.tensor(cam.T, device="cuda", dtype=torch.float32)
+                        R = cam.R if isinstance(cam.R, torch.Tensor) else torch.tensor(cam.R, device="cuda",
+                                                                                       dtype=torch.float32)
+                        T = cam.T if isinstance(cam.T, torch.Tensor) else torch.tensor(cam.T, device="cuda",
+                                                                                       dtype=torch.float32)
                         # 相机中心 = -R^T * T
                         pos = -torch.mm(R.T, T.reshape(-1, 1)).reshape(-1)
                     else:
-                        T = cam.T if isinstance(cam.T, torch.Tensor) else torch.tensor(cam.T, device="cuda", dtype=torch.float32)
+                        T = cam.T if isinstance(cam.T, torch.Tensor) else torch.tensor(cam.T, device="cuda",
+                                                                                       dtype=torch.float32)
                         pos = T  # 近似使用平移向量作为位置
                 else:
                     continue
-                
+
                 # 获取相机朝向
                 if hasattr(cam, 'R') and cam.R is not None:
-                    R = cam.R if isinstance(cam.R, torch.Tensor) else torch.tensor(cam.R, device="cuda", dtype=torch.float32)
+                    R = cam.R if isinstance(cam.R, torch.Tensor) else torch.tensor(cam.R, device="cuda",
+                                                                                   dtype=torch.float32)
                     # 在COLMAP/OpenCV约定中，相机朝向是 -R的第三列
                     forward = -R[:, 2]
                     forward = forward / (torch.norm(forward) + 1e-8)
-                    
+
                     # 计算右向量和上向量
                     world_up = torch.tensor([0, -1, 0], device="cuda", dtype=torch.float32)  # 假设Y轴向下
                     right = torch.cross(forward, world_up)
@@ -303,7 +312,7 @@ class GaussianModel:
                     forward = torch.tensor([0, 0, 1], device="cuda", dtype=torch.float32)
                     right = torch.tensor([1, 0, 0], device="cuda", dtype=torch.float32)
                     up = torch.tensor([0, -1, 0], device="cuda", dtype=torch.float32)
-                
+
                 # 获取FOV
                 if hasattr(cam, 'FovX') and cam.FovX is not None:
                     fov_x = float(cam.FovX)
@@ -311,14 +320,14 @@ class GaussianModel:
                     fov_x = float(cam.fovx)
                 else:
                     fov_x = np.pi / 3  # 默认60度
-                
+
                 if hasattr(cam, 'FovY') and cam.FovY is not None:
                     fov_y = float(cam.FovY)
                 elif hasattr(cam, 'fovy'):
                     fov_y = float(cam.fovy)
                 else:
                     fov_y = np.pi / 3
-                
+
                 cam_data.append({
                     'position': pos,
                     'forward': forward,
@@ -327,58 +336,59 @@ class GaussianModel:
                     'fov_x': fov_x,
                     'fov_y': fov_y
                 })
-                
+
             except Exception as e:
                 print(f"Warning: Error processing camera {i}: {e}")
                 continue
-        
+
         if len(cam_data) < 2:
             print("Warning: Insufficient valid camera data, falling back to simple random sampling")
             scale = self.spatial_lr_scale * 0.5
             return (torch.rand((num_points, 3), device="cuda") * 2 - 1) * scale
-        
+
         print(f"  - 成功处理 {len(cam_data)}/{num_cameras} 个相机")
-        
+
         # 在视锥体内采样点
         for i in range(num_points):
             try:
                 # 随机选择一个相机
                 cam_idx = np.random.randint(0, len(cam_data))
                 cam = cam_data[cam_idx]
-                
+
                 # 在视锥体内采样
                 # 1. 随机深度（在合理范围内）
                 depth = torch.rand(1, device="cuda") * self.spatial_lr_scale * 0.8 + 0.1 * self.spatial_lr_scale
-                
+
                 # 2. 随机方向偏移（在FOV内）
                 max_offset_x = torch.tan(torch.tensor(cam['fov_x'] / 2, device="cuda"))
                 max_offset_y = torch.tan(torch.tensor(cam['fov_y'] / 2, device="cuda"))
-                
+
                 offset_x = (torch.rand(1, device="cuda") * 2 - 1) * max_offset_x
                 offset_y = (torch.rand(1, device="cuda") * 2 - 1) * max_offset_y
-                
+
                 # 3. 计算相机局部坐标
-                point = cam['position'] + depth * cam['forward'] + depth * offset_x * cam['right'] + depth * offset_y * cam['up']
-                
+                point = cam['position'] + depth * cam['forward'] + depth * offset_x * cam['right'] + depth * offset_y * \
+                        cam['up']
+
                 # 添加少量噪声
                 noise = torch.randn(3, device="cuda") * 0.1 * self.spatial_lr_scale
                 point = point + noise
-                
+
                 points_list.append(point)
-                
+
             except Exception as e:
                 print(f"Warning: Error sampling point {i}: {e}")
                 # 如果出错，使用简单的随机点
                 point = torch.randn(3, device="cuda") * self.spatial_lr_scale * 0.5
                 points_list.append(point)
-        
+
         points = torch.stack(points_list)
-        
+
         # 打印采样统计
-        print(f"  - 采样点范围: X [{points[:,0].min():.2f}, {points[:,0].max():.2f}]")
-        print(f"                Y [{points[:,1].min():.2f}, {points[:,1].max():.2f}]")
-        print(f"                Z [{points[:,2].min():.2f}, {points[:,2].max():.2f}]")
-        
+        print(f"  - 采样点范围: X [{points[:, 0].min():.2f}, {points[:, 0].max():.2f}]")
+        print(f"                Y [{points[:, 1].min():.2f}, {points[:, 1].max():.2f}]")
+        print(f"                Z [{points[:, 2].min():.2f}, {points[:, 2].max():.2f}]")
+
         return points
 
     def training_setup(self, training_args):
@@ -401,8 +411,8 @@ class GaussianModel:
             self.shoptimizer = torch.optim.Adam(sh_l, lr=0.0, eps=1e-15)
         elif self.optimizer_type == "sparse_adam":
             self.optimizer = SparseGaussianAdam(l + sh_l, lr=0.0, eps=1e-15)
-        self.xyz_scheduler_args = get_expon_lr_func(lr_init=training_args.position_lr_init*self.spatial_lr_scale,
-                                                    lr_final=training_args.position_lr_final*self.spatial_lr_scale,
+        self.xyz_scheduler_args = get_expon_lr_func(lr_init=training_args.position_lr_init * self.spatial_lr_scale,
+                                                    lr_final=training_args.position_lr_final * self.spatial_lr_scale,
                                                     lr_delay_mult=training_args.position_lr_delay_mult,
                                                     max_steps=training_args.position_lr_max_steps)
 
@@ -418,29 +428,29 @@ class GaussianModel:
         ''' An optimization schdeuler. The goal is similar to the sparse Adam of taming 3dgs.'''
         if iteration <= 15000:
             self.optimizer.step()
-            self.optimizer.zero_grad(set_to_none = True)
+            self.optimizer.zero_grad(set_to_none=True)
             if iteration % 16 == 0:
                 self.shoptimizer.step()
-                self.shoptimizer.zero_grad(set_to_none = True)
+                self.shoptimizer.zero_grad(set_to_none=True)
         elif iteration <= 20000:
-            if iteration % 32 ==0:
+            if iteration % 32 == 0:
                 self.optimizer.step()
-                self.optimizer.zero_grad(set_to_none = True)
+                self.optimizer.zero_grad(set_to_none=True)
                 self.shoptimizer.step()
-                self.shoptimizer.zero_grad(set_to_none = True)
+                self.shoptimizer.zero_grad(set_to_none=True)
         else:
-            if iteration % 64 ==0:
+            if iteration % 64 == 0:
                 self.optimizer.step()
-                self.optimizer.zero_grad(set_to_none = True)
+                self.optimizer.zero_grad(set_to_none=True)
                 self.shoptimizer.step()
-                self.shoptimizer.zero_grad(set_to_none = True)
+                self.shoptimizer.zero_grad(set_to_none=True)
 
     def construct_list_of_attributes(self):
         l = ['x', 'y', 'z', 'nx', 'ny', 'nz']
         # All channels except the 3 DC
-        for i in range(self._features_dc.shape[1]*self._features_dc.shape[2]):
+        for i in range(self._features_dc.shape[1] * self._features_dc.shape[2]):
             l.append('f_dc_{}'.format(i))
-        for i in range(self._features_rest.shape[1]*self._features_rest.shape[2]):
+        for i in range(self._features_rest.shape[1] * self._features_rest.shape[2]):
             l.append('f_rest_{}'.format(i))
         l.append('opacity')
         for i in range(self._scaling.shape[1]):
@@ -469,7 +479,8 @@ class GaussianModel:
         PlyData([el]).write(path)
 
     def reset_opacity(self):
-        opacities_new = self.inverse_opacity_activation(torch.min(self.get_opacity, torch.ones_like(self.get_opacity)*0.01))
+        opacities_new = self.inverse_opacity_activation(
+            torch.min(self.get_opacity, torch.ones_like(self.get_opacity) * 0.01))
         optimizable_tensors = self.replace_tensor_to_optimizer(opacities_new, "opacity")
         self._opacity = optimizable_tensors["opacity"]
 
@@ -478,7 +489,7 @@ class GaussianModel:
 
         xyz = np.stack((np.asarray(plydata.elements[0]["x"]),
                         np.asarray(plydata.elements[0]["y"]),
-                        np.asarray(plydata.elements[0]["z"])),  axis=1)
+                        np.asarray(plydata.elements[0]["z"])), axis=1)
         opacities = np.asarray(plydata.elements[0]["opacity"])[..., np.newaxis]
 
         features_dc = np.zeros((xyz.shape[0], 3, 1))
@@ -487,8 +498,8 @@ class GaussianModel:
         features_dc[:, 2, 0] = np.asarray(plydata.elements[0]["f_dc_2"])
 
         extra_f_names = [p.name for p in plydata.elements[0].properties if p.name.startswith("f_rest_")]
-        extra_f_names = sorted(extra_f_names, key = lambda x: int(x.split('_')[-1]))
-        assert len(extra_f_names)==3*(self.max_sh_degree + 1) ** 2 - 3
+        extra_f_names = sorted(extra_f_names, key=lambda x: int(x.split('_')[-1]))
+        assert len(extra_f_names) == 3 * (self.max_sh_degree + 1) ** 2 - 3
         features_extra = np.zeros((xyz.shape[0], len(extra_f_names)))
         for idx, attr_name in enumerate(extra_f_names):
             features_extra[:, idx] = np.asarray(plydata.elements[0][attr_name])
@@ -496,20 +507,24 @@ class GaussianModel:
         features_extra = features_extra.reshape((features_extra.shape[0], 3, (self.max_sh_degree + 1) ** 2 - 1))
 
         scale_names = [p.name for p in plydata.elements[0].properties if p.name.startswith("scale_")]
-        scale_names = sorted(scale_names, key = lambda x: int(x.split('_')[-1]))
+        scale_names = sorted(scale_names, key=lambda x: int(x.split('_')[-1]))
         scales = np.zeros((xyz.shape[0], len(scale_names)))
         for idx, attr_name in enumerate(scale_names):
             scales[:, idx] = np.asarray(plydata.elements[0][attr_name])
 
         rot_names = [p.name for p in plydata.elements[0].properties if p.name.startswith("rot")]
-        rot_names = sorted(rot_names, key = lambda x: int(x.split('_')[-1]))
+        rot_names = sorted(rot_names, key=lambda x: int(x.split('_')[-1]))
         rots = np.zeros((xyz.shape[0], len(rot_names)))
         for idx, attr_name in enumerate(rot_names):
             rots[:, idx] = np.asarray(plydata.elements[0][attr_name])
 
         self._xyz = nn.Parameter(torch.tensor(xyz, dtype=torch.float, device="cuda").requires_grad_(True))
-        self._features_dc = nn.Parameter(torch.tensor(features_dc, dtype=torch.float, device="cuda").transpose(1, 2).contiguous().requires_grad_(True))
-        self._features_rest = nn.Parameter(torch.tensor(features_extra, dtype=torch.float, device="cuda").transpose(1, 2).contiguous().requires_grad_(True))
+        self._features_dc = nn.Parameter(
+            torch.tensor(features_dc, dtype=torch.float, device="cuda").transpose(1, 2).contiguous().requires_grad_(
+                True))
+        self._features_rest = nn.Parameter(
+            torch.tensor(features_extra, dtype=torch.float, device="cuda").transpose(1, 2).contiguous().requires_grad_(
+                True))
         self._opacity = nn.Parameter(torch.tensor(opacities, dtype=torch.float, device="cuda").requires_grad_(True))
         self._scaling = nn.Parameter(torch.tensor(scales, dtype=torch.float, device="cuda").requires_grad_(True))
         self._rotation = nn.Parameter(torch.tensor(rots, dtype=torch.float, device="cuda").requires_grad_(True))
@@ -584,27 +599,32 @@ class GaussianModel:
                 stored_state = opt.state.get(group['params'][0], None)
                 if stored_state is not None:
 
-                    stored_state["exp_avg"] = torch.cat((stored_state["exp_avg"], torch.zeros_like(extension_tensor)), dim=0)
-                    stored_state["exp_avg_sq"] = torch.cat((stored_state["exp_avg_sq"], torch.zeros_like(extension_tensor)), dim=0)
+                    stored_state["exp_avg"] = torch.cat((stored_state["exp_avg"], torch.zeros_like(extension_tensor)),
+                                                        dim=0)
+                    stored_state["exp_avg_sq"] = torch.cat(
+                        (stored_state["exp_avg_sq"], torch.zeros_like(extension_tensor)), dim=0)
 
                     del opt.state[group['params'][0]]
-                    group["params"][0] = nn.Parameter(torch.cat((group["params"][0], extension_tensor), dim=0).requires_grad_(True))
+                    group["params"][0] = nn.Parameter(
+                        torch.cat((group["params"][0], extension_tensor), dim=0).requires_grad_(True))
                     opt.state[group['params'][0]] = stored_state
 
                     optimizable_tensors[group["name"]] = group["params"][0]
                 else:
-                    group["params"][0] = nn.Parameter(torch.cat((group["params"][0], extension_tensor), dim=0).requires_grad_(True))
+                    group["params"][0] = nn.Parameter(
+                        torch.cat((group["params"][0], extension_tensor), dim=0).requires_grad_(True))
                     optimizable_tensors[group["name"]] = group["params"][0]
 
         return optimizable_tensors
 
-    def densification_postfix(self, new_xyz, new_features_dc, new_features_rest, new_opacities, new_scaling, new_rotation, new_tmp_radii):
+    def densification_postfix(self, new_xyz, new_features_dc, new_features_rest, new_opacities, new_scaling,
+                              new_rotation, new_tmp_radii):
         d = {"xyz": new_xyz,
-        "f_dc": new_features_dc,
-        "f_rest": new_features_rest,
-        "opacity": new_opacities,
-        "scaling" : new_scaling,
-        "rotation" : new_rotation}
+             "f_dc": new_features_dc,
+             "f_rest": new_features_rest,
+             "opacity": new_opacities,
+             "scaling": new_scaling,
+             "rotation": new_rotation}
 
         optimizable_tensors = self.cat_tensors_to_optimizer(d)
         self._xyz = optimizable_tensors["xyz"]
@@ -622,7 +642,7 @@ class GaussianModel:
 
     def densify_and_split_fastgs(self, metric_mask, filter, N=2):
         current_num = self.get_xyz.shape[0]
-        
+
         # 确保 mask 维度匹配当前点数
         if metric_mask.shape[0] != current_num:
             if metric_mask.shape[0] < current_num:
@@ -631,7 +651,7 @@ class GaussianModel:
                 metric_mask = new_metric_mask
             else:
                 metric_mask = metric_mask[:current_num]
-        
+
         if filter.shape[0] != current_num:
             if filter.shape[0] < current_num:
                 new_filter = torch.zeros(current_num, dtype=bool, device="cuda")
@@ -639,10 +659,10 @@ class GaussianModel:
                 filter = new_filter
             else:
                 filter = filter[:current_num]
-        
+
         selected_pts_mask = torch.zeros((current_num), dtype=bool, device="cuda")
         mask = torch.logical_and(metric_mask, filter)
-        
+
         if mask.shape[0] <= current_num:
             selected_pts_mask[:mask.shape[0]] = mask
         else:
@@ -651,17 +671,17 @@ class GaussianModel:
         if selected_pts_mask.sum() == 0:
             return
 
-        stds = self.get_scaling[selected_pts_mask].repeat(N,1)
+        stds = self.get_scaling[selected_pts_mask].repeat(N, 1)
         means = torch.zeros((stds.size(0), 3), device="cuda")
         samples = torch.normal(mean=means, std=stds)
-        rots = build_rotation(self._rotation[selected_pts_mask]).repeat(N,1,1)
+        rots = build_rotation(self._rotation[selected_pts_mask]).repeat(N, 1, 1)
         new_xyz = torch.bmm(rots, samples.unsqueeze(-1)).squeeze(-1) + self.get_xyz[selected_pts_mask].repeat(N, 1)
-        new_scaling = self.scaling_inverse_activation(self.get_scaling[selected_pts_mask].repeat(N,1) / (0.8*N))
-        new_rotation = self._rotation[selected_pts_mask].repeat(N,1)
-        new_features_dc = self._features_dc[selected_pts_mask].repeat(N,1,1)
-        new_features_rest = self._features_rest[selected_pts_mask].repeat(N,1,1)
-        new_opacity = self._opacity[selected_pts_mask].repeat(N,1)
-        
+        new_scaling = self.scaling_inverse_activation(self.get_scaling[selected_pts_mask].repeat(N, 1) / (0.8 * N))
+        new_rotation = self._rotation[selected_pts_mask].repeat(N, 1)
+        new_features_dc = self._features_dc[selected_pts_mask].repeat(N, 1, 1)
+        new_features_rest = self._features_rest[selected_pts_mask].repeat(N, 1, 1)
+        new_opacity = self._opacity[selected_pts_mask].repeat(N, 1)
+
         # 确保 tmp_radii 存在且维度正确
         if self.tmp_radii is None:
             self.tmp_radii = torch.zeros(current_num, device="cuda")
@@ -670,18 +690,19 @@ class GaussianModel:
             copy_len = min(self.tmp_radii.shape[0], current_num)
             new_tmp_radii[:copy_len] = self.tmp_radii[:copy_len]
             self.tmp_radii = new_tmp_radii
-        
+
         new_tmp_radii = self.tmp_radii[selected_pts_mask].repeat(N)
 
-        self.densification_postfix(new_xyz, new_features_dc, new_features_rest, 
-                                  new_opacity, new_scaling, new_rotation, new_tmp_radii)
+        self.densification_postfix(new_xyz, new_features_dc, new_features_rest,
+                                   new_opacity, new_scaling, new_rotation, new_tmp_radii)
 
-        prune_filter = torch.cat((selected_pts_mask, torch.zeros(N * selected_pts_mask.sum(), device="cuda", dtype=bool)))
+        prune_filter = torch.cat(
+            (selected_pts_mask, torch.zeros(N * selected_pts_mask.sum(), device="cuda", dtype=bool)))
         self.prune_points(prune_filter)
 
     def densify_and_clone_fastgs(self, metric_mask, filter):
         current_num = self.get_xyz.shape[0]
-        
+
         # 确保 mask 维度匹配当前点数
         if metric_mask.shape[0] != current_num:
             if metric_mask.shape[0] < current_num:
@@ -690,7 +711,7 @@ class GaussianModel:
                 metric_mask = new_metric_mask
             else:
                 metric_mask = metric_mask[:current_num]
-        
+
         if filter.shape[0] != current_num:
             if filter.shape[0] < current_num:
                 new_filter = torch.zeros(current_num, dtype=bool, device="cuda")
@@ -698,12 +719,12 @@ class GaussianModel:
                 filter = new_filter
             else:
                 filter = filter[:current_num]
-        
+
         selected_pts_mask = torch.logical_and(metric_mask, filter)
-        
+
         if selected_pts_mask.sum() == 0:
             return
-        
+
         # 确保 tmp_radii 存在且维度正确
         if self.tmp_radii is None:
             self.tmp_radii = torch.zeros(current_num, device="cuda")
@@ -712,7 +733,7 @@ class GaussianModel:
             copy_len = min(self.tmp_radii.shape[0], current_num)
             new_tmp_radii[:copy_len] = self.tmp_radii[:copy_len]
             self.tmp_radii = new_tmp_radii
-        
+
         new_xyz = self._xyz[selected_pts_mask]
         new_features_dc = self._features_dc[selected_pts_mask]
         new_features_rest = self._features_rest[selected_pts_mask]
@@ -721,12 +742,13 @@ class GaussianModel:
         new_rotation = self._rotation[selected_pts_mask]
         new_tmp_radii = self.tmp_radii[selected_pts_mask]
 
-        self.densification_postfix(new_xyz, new_features_dc, new_features_rest, 
-                                  new_opacities, new_scaling, new_rotation, new_tmp_radii)
+        self.densification_postfix(new_xyz, new_features_dc, new_features_rest,
+                                   new_opacities, new_scaling, new_rotation, new_tmp_radii)
 
-    def densify_and_prune_fastgs(self, max_screen_size, min_opacity, extent, radii, args, importance_score = None, pruning_score = None):
-        
-        ''' 
+    def densify_and_prune_fastgs(self, max_screen_size, min_opacity, extent, radii, args, importance_score=None,
+                                 pruning_score=None):
+
+        '''
             Densification and Pruning based on FastGS criteria:
             1.  The gaussians candidate for densification are selected based on the gradient of their position first.
             2.  Then, based on their average metric score (computed over multiple sampled views), they are either densified (cloned) or split.
@@ -735,7 +757,7 @@ class GaussianModel:
         '''
         # 在开始前强制同步缓冲区
         self.force_sync_buffers()
-        
+
         grad_vars = self.xyz_gradient_accum / self.denom
         grad_vars[grad_vars.isnan()] = 0.0
         self.tmp_radii = radii
@@ -745,8 +767,8 @@ class GaussianModel:
 
         grad_qualifiers = torch.where(torch.norm(grad_vars, dim=-1) >= args.grad_thresh, True, False)
         grad_qualifiers_abs = torch.where(torch.norm(grads_abs, dim=-1) >= args.grad_abs_thresh, True, False)
-        clone_qualifiers = torch.max(self.get_scaling, dim=1).values <= args.dense*extent
-        split_qualifiers = torch.max(self.get_scaling, dim=1).values > args.dense*extent
+        clone_qualifiers = torch.max(self.get_scaling, dim=1).values <= args.dense * extent
+        split_qualifiers = torch.max(self.get_scaling, dim=1).values > args.dense * extent
 
         all_clones = torch.logical_and(clone_qualifiers, grad_qualifiers)
         all_splits = torch.logical_and(split_qualifiers, grad_qualifiers_abs)
@@ -764,7 +786,7 @@ class GaussianModel:
             big_points_ws = self.get_scaling.max(dim=1).values > 0.1 * extent
             prune_mask = torch.logical_or(torch.logical_or(prune_mask, big_points_vs), big_points_ws)
 
-        scores = 1 - pruning_score 
+        scores = 1 - pruning_score
         to_remove = torch.sum(prune_mask)
         remove_budget = int(0.5 * to_remove)
 
@@ -777,7 +799,7 @@ class GaussianModel:
                 padded_importance[:scores.shape[0]] = 1 / (1e-6 + scores.squeeze())
             else:
                 padded_importance = 1 / (1e-6 + scores[:n_init_points].squeeze())
-            
+
             selected_pts_mask = torch.zeros_like(padded_importance, dtype=bool, device="cuda")
             try:
                 sampled_indices = torch.multinomial(padded_importance, remove_budget, replacement=False)
@@ -791,24 +813,80 @@ class GaussianModel:
         else:
             if prune_mask.any():
                 self.prune_points(prune_mask)
-        
-        opacities_new = inverse_sigmoid(torch.min(self.get_opacity, torch.ones_like(self.get_opacity)*0.8))
+
+        opacities_new = inverse_sigmoid(torch.min(self.get_opacity, torch.ones_like(self.get_opacity) * 0.8))
         optimizable_tensors = self.replace_tensor_to_optimizer(opacities_new, "opacity")
         self._opacity = optimizable_tensors["opacity"]
         self.tmp_radii = None
 
         torch.cuda.empty_cache()
 
+    def densify_and_prune(self, max_screen_size, min_opacity, extent, radii, args, importance_score=None,
+                          pruning_score=None):
+        """
+        用于 Phase 0
+        只基于阈值进行剪枝，不使用多视角采样
+        """
+        grad_vars = self.xyz_gradient_accum / self.denom
+        grad_vars[grad_vars.isnan()] = 0.0
+
+        current_num_points = self.get_xyz.shape[0]
+        if radii.shape[0] != current_num_points:
+            if radii.shape[0] < current_num_points:
+                new_radii = torch.zeros(current_num_points, device="cuda")
+                new_radii[:radii.shape[0]] = radii
+                self.tmp_radii = new_radii
+            else:
+                self.tmp_radii = radii[:current_num_points]
+        else:
+            self.tmp_radii = radii
+
+        grads_abs = self.xyz_gradient_accum_abs / self.denom
+        grads_abs[grads_abs.isnan()] = 0.0
+
+        grad_qualifiers = torch.where(torch.norm(grad_vars, dim=-1) >= args.grad_thresh, True, False)
+        grad_qualifiers_abs = torch.where(torch.norm(grads_abs, dim=-1) >= args.grad_abs_thresh, True, False)
+        clone_qualifiers = torch.max(self.get_scaling, dim=1).values <= args.dense * extent
+        split_qualifiers = torch.max(self.get_scaling, dim=1).values > args.dense * extent
+
+        all_clones = torch.logical_and(clone_qualifiers, grad_qualifiers)
+        all_splits = torch.logical_and(split_qualifiers, grad_qualifiers_abs)
+
+        metric_mask = importance_score > 5 if importance_score is not None else torch.ones_like(grad_qualifiers)
+
+        self.densify_and_clone_fastgs(metric_mask, all_clones)
+        self.densify_and_split_fastgs(metric_mask, all_splits)
+
+     
+        prune_mask = (self.get_opacity < min_opacity).squeeze()
+        if max_screen_size:
+            big_points_vs = self.max_radii2D > max_screen_size
+            big_points_ws = self.get_scaling.max(dim=1).values > 0.1 * extent
+            prune_mask = torch.logical_or(torch.logical_or(prune_mask, big_points_vs), big_points_ws)
+
+        if prune_mask.any():
+            self.prune_points(prune_mask)
+
+        opacities_new = inverse_sigmoid(torch.min(self.get_opacity, torch.ones_like(self.get_opacity) * 0.8))
+        optimizable_tensors = self.replace_tensor_to_optimizer(opacities_new, "opacity")
+        self._opacity = optimizable_tensors["opacity"]
+        self.tmp_radii = None
+
+        torch.cuda.empty_cache()
+
+
     def add_densification_stats(self, viewspace_point_tensor, update_filter):
-        self.xyz_gradient_accum[update_filter] += torch.norm(viewspace_point_tensor.grad[update_filter,:2], dim=-1, keepdim=True)
-        self.xyz_gradient_accum_abs[update_filter] += torch.norm(viewspace_point_tensor.grad[update_filter, 2:], dim=-1, keepdim=True)
+        self.xyz_gradient_accum[update_filter] += torch.norm(viewspace_point_tensor.grad[update_filter, :2], dim=-1,
+                                                             keepdim=True)
+        self.xyz_gradient_accum_abs[update_filter] += torch.norm(viewspace_point_tensor.grad[update_filter, 2:], dim=-1,
+                                                                 keepdim=True)
         self.denom[update_filter] += 1
 
-    def final_prune_fastgs(self, min_opacity, pruning_score = None):
+    def final_prune_fastgs(self, min_opacity, pruning_score=None):
         """Final-stage pruning: remove Gaussians based on opacity and multi-view consistency.
         In the final stage we remove Gaussians that have low opacity or that are flagged by
         our multi-view reconstruction consistency metric (provided as `pruning_score`)."""
-        prune_mask = (self.get_opacity < min_opacity).squeeze() 
+        prune_mask = (self.get_opacity < min_opacity).squeeze()
         scores_mask = pruning_score > 0.9
         final_prune = torch.logical_or(prune_mask, scores_mask)
         self.prune_points(final_prune)
@@ -855,371 +933,69 @@ class GaussianModel:
                 new_tmp[:copy_len] = self.tmp_radii[:copy_len]
                 self.tmp_radii = new_tmp
 
-    # ============== 语义增密相关方法（可选） ==============
+    def densify_and_split(self, grads, grad_threshold, scene_extent, N=2):
+        n_init_points = self.get_xyz.shape[0]
+        # Extract points that satisfy the gradient condition
+        padded_grad = torch.zeros((n_init_points), device="cuda")
+        padded_grad[:grads.shape[0]] = grads.squeeze()
+        selected_pts_mask = torch.where(padded_grad >= grad_threshold, True, False)
+        selected_pts_mask = torch.logical_and(selected_pts_mask,
+                                              torch.max(self.get_scaling,
+                                                        dim=1).values > self.percent_dense * scene_extent)
 
-    def densify_semantic_regions(self, points_mask, args, extent, densify_factor=2.0):
-        """
-        对模糊区域进行增密（第一阶段）
-        - 只分裂，不剪枝
-        - 基于梯度选择候选点
-
-        Args:
-            points_mask: 布尔张量，表示哪些高斯点需要增密
-            args: 优化参数
-            extent: 场景范围
-            densify_factor: 增密强度因子
-
-        Returns:
-            net_change: 净增点数
-        """
-        if points_mask is None or points_mask.sum() == 0:
-            return 0
-
-        before_densify = self.get_xyz.shape[0]
-
-        print(f"Phase 1 - Semantic densification: {points_mask.sum().item()} candidate points")
-
-        if not hasattr(self, 'tmp_radii') or self.tmp_radii is None:
-            self.tmp_radii = torch.zeros(self.get_xyz.shape[0], device="cuda")
-
-        # 对齐mask维度
-        current_num_points = self.get_xyz.shape[0]
-        if points_mask.shape[0] != current_num_points:
-            if points_mask.shape[0] < current_num_points:
-                new_mask = torch.zeros(current_num_points, dtype=bool, device="cuda")
-                new_mask[:points_mask.shape[0]] = points_mask
-                points_mask = new_mask
-            else:
-                points_mask = points_mask[:current_num_points]
-
-        # 获取所有候选点中尺寸大的点（需要分裂的）
-        split_qualifiers = torch.max(self.get_scaling, dim=1).values > args.dense * extent
-        semantic_splits_all = torch.logical_and(split_qualifiers, points_mask)
-
-        if semantic_splits_all.sum() == 0:
-            print(f"  - No split candidates found")
-            return 0
-
-        # 获取所有分裂候选点的索引
-        split_indices = torch.where(semantic_splits_all)[0]
-
-        # 计算梯度（使用累积梯度）
-        if hasattr(self, 'xyz_gradient_accum') and self.denom is not None:
-            grad_norm = torch.norm(self.xyz_gradient_accum[split_indices] /
-                                   (self.denom[split_indices] + 1e-8), dim=-1)
-        else:
-            grad_norm = torch.ones(len(split_indices), device="cuda")
-
-        # 按梯度降序排序（梯度大的优先分裂）
-        sorted_indices = split_indices[torch.argsort(grad_norm, descending=True)]
-
-        # 创建分裂mask
-        split_mask = torch.zeros_like(points_mask)
-        split_mask[sorted_indices] = True
-
-        print(f"  - Split candidates: {semantic_splits_all.sum()} points, "
-              f"splitting all {split_mask.sum()} points")
-
-        # 执行分裂（不剪枝）
-        self._densify_split_semantic_no_prune(split_mask, densify_factor)
-        print(f"  - Split {split_mask.sum()} points")
-
-        after_all = self.get_xyz.shape[0]
-        net_change = after_all - before_densify
-
-        if after_all != before_densify:
-            self.tmp_radii = torch.zeros(after_all, device="cuda")
-            print(f"  - Net change: {net_change} points (now: {after_all})")
-
-        return net_change
-
-    def refine_difference_regions(self, points_mask, args, extent, densify_factor=2.0, prune_after=False,
-                                  target_points=None):
-        """
-        对差异区域进行局部细化（第二阶段）
-        - 大尺寸点：分裂
-        - 小尺寸点：克隆（根据梯度决定数量）
-        - 如果提供target_points，只会在最后检查并强制剪枝到目标点数
-
-        Args:
-            points_mask: 布尔张量，表示哪些高斯点需要处理
-            args: 优化参数
-            extent: 场景范围
-            densify_factor: 增密强度因子
-            prune_after: 固定为False，表示不执行常规剪枝
-            target_points: 目标总点数上限
-
-        Returns:
-            net_change: 净增点数
-        """
-        if points_mask is None or points_mask.sum() == 0:
-            return 0
-
-        before_densify = self.get_xyz.shape[0]
-        total_candidates = points_mask.sum().item()
-        print(f"Phase 2 - Refining difference regions: {total_candidates} candidate points")
-
-        if not hasattr(self, 'tmp_radii') or self.tmp_radii is None:
-            self.tmp_radii = torch.zeros(self.get_xyz.shape[0], device="cuda")
-
-        # 对齐mask维度
-        current_num_points = self.get_xyz.shape[0]
-        if points_mask.shape[0] != current_num_points:
-            if points_mask.shape[0] < current_num_points:
-                new_mask = torch.zeros(current_num_points, dtype=bool, device="cuda")
-                new_mask[:points_mask.shape[0]] = points_mask
-                points_mask = new_mask
-            else:
-                points_mask = points_mask[:current_num_points]
-
-        # 获取差异区域内的所有点索引
-        diff_indices = torch.where(points_mask)[0]
-
-        if len(diff_indices) == 0:
-            return 0
-
-        # 获取这些点的尺度，区分大尺寸和小尺寸
-        scales = torch.max(self.get_scaling[diff_indices], dim=1).values
-        split_qualifiers = scales > args.dense * extent  # 大尺寸 -> 分裂
-        clone_qualifiers = ~split_qualifiers  # 小尺寸 -> 克隆
-
-        total_split = 0
-        total_clone = 0
-
-        # 保存分裂后需要更新的信息
-        split_done = False
-
-        # ===== 第一步：处理大尺寸点（分裂） =====
-        if split_qualifiers.sum() > 0:
-            split_indices = diff_indices[split_qualifiers]
-            split_mask = torch.zeros_like(points_mask)
-            split_mask[split_indices] = True
-
-            print(f"  - Split candidates: {len(split_indices)} large points")
-            self._densify_split_semantic(split_mask, densify_factor)
-            total_split = split_mask.sum().item()
-            split_done = True
-            print(f"    Split {total_split} points")
-
-        # ===== 第二步：处理小尺寸点（克隆，按梯度决定数量） =====
-        if clone_qualifiers.sum() > 0:
-            if split_done:
-                # 如果已经执行了分裂，重新计算clone_indices
-                current_num_points = self.get_xyz.shape[0]
-                original_clone_indices = diff_indices[clone_qualifiers]
-                valid_mask = original_clone_indices < current_num_points
-                valid_clone_indices = original_clone_indices[valid_mask]
-
-                if len(valid_clone_indices) > 0:
-                    # 计算这些点的梯度
-                    if hasattr(self, 'xyz_gradient_accum') and self.denom is not None:
-                        grad_norm = torch.norm(self.xyz_gradient_accum[valid_clone_indices] /
-                                               (self.denom[valid_clone_indices] + 1e-8), dim=-1)
-                        if grad_norm.max() > 0:
-                            grad_norm = grad_norm / grad_norm.max()
-                    else:
-                        grad_norm = torch.ones(len(valid_clone_indices), device="cuda") * 0.5
-
-                    # 根据梯度决定克隆数量
-                    clone_counts = (grad_norm * 2 + 1).int()  # 范围：1-3
-
-                    # 逐点克隆
-                    total_clones_this_round = 0
-                    for idx, count in zip(valid_clone_indices, clone_counts):
-                        if count > 0:
-                            mask = torch.zeros(current_num_points, dtype=bool, device="cuda")
-                            mask[idx] = True
-                            self._densify_clone_semantic(mask, densify_factor=count.item())
-                            total_clones_this_round += count.item()
-
-                    total_clone = total_clones_this_round
-                    print(f"  - Clone candidates: {len(valid_clone_indices)} small points, "
-                          f"cloned {total_clone} copies")
-            else:
-                # 没有分裂，直接用原来的indices
-                clone_indices = diff_indices[clone_qualifiers]
-
-                # 计算梯度分数
-                if hasattr(self, 'xyz_gradient_accum') and self.denom is not None:
-                    grad_norm = torch.norm(self.xyz_gradient_accum[clone_indices] /
-                                           (self.denom[clone_indices] + 1e-8), dim=-1)
-                    if grad_norm.max() > 0:
-                        grad_norm = grad_norm / grad_norm.max()
-                else:
-                    grad_norm = torch.ones(len(clone_indices), device="cuda") * 0.5
-
-                # 根据梯度决定克隆数量
-                clone_counts = (grad_norm * 2 + 1).int()  # 范围：1-3
-
-                # 逐点克隆
-                total_clones_this_round = 0
-                for idx, count in zip(clone_indices, clone_counts):
-                    if count > 0:
-                        mask = torch.zeros_like(points_mask)
-                        mask[idx] = True
-                        self._densify_clone_semantic(mask, densify_factor=count.item())
-                        total_clones_this_round += count.item()
-
-                total_clone = total_clones_this_round
-                print(f"  - Clone candidates: {len(clone_indices)} small points, "
-                      f"cloned {total_clone} copies")
-
-        # ===== 第三步：检查目标点数限制 =====
-        after_densify = self.get_xyz.shape[0]
-        
-        if target_points is not None and after_densify > target_points:
-            print(f"  - Current points {after_densify} exceeds target {target_points}, enforcing limit")
-            
-            # 简单的强制剪枝 - 基于质量分数
-            need_prune = after_densify - target_points
-            
-            # 计算质量分数（分数越高越该被剪枝）
-            quality_score = torch.zeros(after_densify, device="cuda")
-            
-            # 透明度分数（透明度越低，分数越高）
-            opacity = self.get_opacity.squeeze()
-            quality_score += (1.0 - opacity) * 2.0
-            
-            # 尺寸分数（尺寸越大，分数越高）
-            size_score = self.get_scaling.max(dim=1).values / (0.1 * extent)
-            quality_score += size_score.clamp(max=2.0)
-            
-            # 屏幕空间大小分数
-            if hasattr(self, 'max_radii2D') and self.max_radii2D is not None:
-                screen_score = self.max_radii2D / 15.0
-                quality_score += screen_score.clamp(max=2.0)
-            
-            # 找到质量分数最高的 need_prune 个点
-            _, indices_to_prune = torch.topk(quality_score, min(need_prune, len(quality_score)), largest=True)
-            
-            force_prune_mask = torch.zeros(after_densify, dtype=bool, device="cuda")
-            force_prune_mask[indices_to_prune] = True
-            self.prune_points(force_prune_mask)
-            
-            print(f"  - Enforced target points limit, removed {need_prune} points")
-
-        # 计算净变化
-        after_all = self.get_xyz.shape[0]
-        net_change = after_all - before_densify
-
-        if after_all != before_densify:
-            self.tmp_radii = torch.zeros(after_all, device="cuda")
-            print(f"  - Net change: {net_change} points (now: {after_all})")
-
-        return net_change
-
-    def _densify_clone_semantic(self, mask, densify_factor=2.0):
-        """克隆语义区域内的点"""
-        N = int(densify_factor)
-
-        # 确保mask的维度匹配
-        if mask.shape[0] != self._xyz.shape[0]:
-            if mask.shape[0] < self._xyz.shape[0]:
-                new_mask = torch.zeros(self._xyz.shape[0], dtype=bool, device="cuda")
-                new_mask[:mask.shape[0]] = mask
-                mask = new_mask
-            else:
-                mask = mask[:self._xyz.shape[0]]
-
-        if mask.sum() == 0:
-            return
-
-        new_xyz = self._xyz[mask].repeat(N, 1)
-        new_features_dc = self._features_dc[mask].repeat(N, 1, 1)
-        new_features_rest = self._features_rest[mask].repeat(N, 1, 1)
-        new_opacities = self._opacity[mask].repeat(N, 1)
-        new_scaling = self._scaling[mask].repeat(N, 1)
-        new_rotation = self._rotation[mask].repeat(N, 1)
-
-        if hasattr(self, 'tmp_radii') and self.tmp_radii is not None:
-            new_tmp_radii = self.tmp_radii[mask].repeat(N)
-        else:
-            new_tmp_radii = torch.ones(N * mask.sum(), device="cuda")
-
-        self.densification_postfix(new_xyz, new_features_dc, new_features_rest,
-                                   new_opacities, new_scaling, new_rotation, new_tmp_radii)
-
-    def _densify_split_semantic(self, mask, densify_factor=2.0):
-        """分裂语义区域内的点（每个点分裂成2个，并剪枝原始点）"""
-        N = 2
-
-        # 确保mask的维度匹配
-        if mask.shape[0] != self._xyz.shape[0]:
-            if mask.shape[0] < self._xyz.shape[0]:
-                new_mask = torch.zeros(self._xyz.shape[0], dtype=bool, device="cuda")
-                new_mask[:mask.shape[0]] = mask
-                mask = new_mask
-            else:
-                mask = mask[:self._xyz.shape[0]]
-
-        if mask.sum() == 0:
-            return
-
-        stds = self.get_scaling[mask].repeat(N, 1)
+        stds = self.get_scaling[selected_pts_mask].repeat(N, 1)
         means = torch.zeros((stds.size(0), 3), device="cuda")
         samples = torch.normal(mean=means, std=stds)
-        rots = build_rotation(self._rotation[mask]).repeat(N, 1, 1)
-        new_xyz = torch.bmm(rots, samples.unsqueeze(-1)).squeeze(-1) + self.get_xyz[mask].repeat(N, 1)
+        rots = build_rotation(self._rotation[selected_pts_mask]).repeat(N, 1, 1)
+        new_xyz = torch.bmm(rots, samples.unsqueeze(-1)).squeeze(-1) + self.get_xyz[selected_pts_mask].repeat(N, 1)
+        new_scaling = self.scaling_inverse_activation(self.get_scaling[selected_pts_mask].repeat(N, 1) / (0.8 * N))
+        new_rotation = self._rotation[selected_pts_mask].repeat(N, 1)
+        new_features_dc = self._features_dc[selected_pts_mask].repeat(N, 1, 1)
+        new_features_rest = self._features_rest[selected_pts_mask].repeat(N, 1, 1)
+        new_opacity = self._opacity[selected_pts_mask].repeat(N, 1)
+        new_tmp_radii = self.tmp_radii[selected_pts_mask].repeat(N)
 
-        scale_factor = 0.8 * N / densify_factor
-        new_scaling = self.scaling_inverse_activation(
-            self.get_scaling[mask].repeat(N, 1) / scale_factor
-        )
+        self.densification_postfix(new_xyz, new_features_dc, new_features_rest, new_opacity, new_scaling, new_rotation,
+                                   new_tmp_radii)
 
-        new_rotation = self._rotation[mask].repeat(N, 1)
-        new_features_dc = self._features_dc[mask].repeat(N, 1, 1)
-        new_features_rest = self._features_rest[mask].repeat(N, 1, 1)
-        new_opacity = self._opacity[mask].repeat(N, 1)
-
-        if hasattr(self, 'tmp_radii') and self.tmp_radii is not None:
-            new_tmp_radii = self.tmp_radii[mask].repeat(N)
-        else:
-            new_tmp_radii = torch.ones(N * mask.sum(), device="cuda")
-
-        self.densification_postfix(new_xyz, new_features_dc, new_features_rest,
-                                   new_opacity, new_scaling, new_rotation, new_tmp_radii)
-
-        prune_filter = torch.cat((mask, torch.zeros(N * mask.sum(), device="cuda", dtype=bool)))
+        prune_filter = torch.cat(
+            (selected_pts_mask, torch.zeros(N * selected_pts_mask.sum(), device="cuda", dtype=bool)))
         self.prune_points(prune_filter)
 
-    def _densify_split_semantic_no_prune(self, mask, densify_factor=2.0):
-        """分裂语义区域内的点（每个点分裂成2个，但保留原始点 - 用于第一阶段）"""
-        N = 2
+    def densify_and_clone(self, grads, grad_threshold, scene_extent):
+        # Extract points that satisfy the gradient condition
+        selected_pts_mask = torch.where(torch.norm(grads, dim=-1) >= grad_threshold, True, False)
+        selected_pts_mask = torch.logical_and(selected_pts_mask,
+                                              torch.max(self.get_scaling,
+                                                        dim=1).values <= self.percent_dense * scene_extent)
 
-        # 确保mask的维度匹配
-        if mask.shape[0] != self._xyz.shape[0]:
-            if mask.shape[0] < self._xyz.shape[0]:
-                new_mask = torch.zeros(self._xyz.shape[0], dtype=bool, device="cuda")
-                new_mask[:mask.shape[0]] = mask
-                mask = new_mask
-            else:
-                mask = mask[:self._xyz.shape[0]]
+        new_xyz = self._xyz[selected_pts_mask]
+        new_features_dc = self._features_dc[selected_pts_mask]
+        new_features_rest = self._features_rest[selected_pts_mask]
+        new_opacities = self._opacity[selected_pts_mask]
+        new_scaling = self._scaling[selected_pts_mask]
+        new_rotation = self._rotation[selected_pts_mask]
 
-        if mask.sum() == 0:
-            return
+        new_tmp_radii = self.tmp_radii[selected_pts_mask]
 
-        stds = self.get_scaling[mask].repeat(N, 1)
-        means = torch.zeros((stds.size(0), 3), device="cuda")
-        samples = torch.normal(mean=means, std=stds)
-        rots = build_rotation(self._rotation[mask]).repeat(N, 1, 1)
-        new_xyz = torch.bmm(rots, samples.unsqueeze(-1)).squeeze(-1) + self.get_xyz[mask].repeat(N, 1)
+        self.densification_postfix(new_xyz, new_features_dc, new_features_rest, new_opacities, new_scaling,
+                                   new_rotation, new_tmp_radii)
 
-        scale_factor = 0.8 * N / densify_factor
-        new_scaling = self.scaling_inverse_activation(
-            self.get_scaling[mask].repeat(N, 1) / scale_factor
-        )
+    def densify_and_prune_phase2(self, max_grad, min_opacity, extent, max_screen_size, radii):
+        grads = self.xyz_gradient_accum / self.denom
+        grads[grads.isnan()] = 0.0
 
-        new_rotation = self._rotation[mask].repeat(N, 1)
-        new_features_dc = self._features_dc[mask].repeat(N, 1, 1)
-        new_features_rest = self._features_rest[mask].repeat(N, 1, 1)
-        new_opacity = self._opacity[mask].repeat(N, 1)
+        self.tmp_radii = radii
+        self.densify_and_clone(grads, max_grad, extent)
+        self.densify_and_split(grads, max_grad, extent)
 
-        if hasattr(self, 'tmp_radii') and self.tmp_radii is not None:
-            new_tmp_radii = self.tmp_radii[mask].repeat(N)
-        else:
-            new_tmp_radii = torch.ones(N * mask.sum(), device="cuda")
+        prune_mask = (self.get_opacity < min_opacity).squeeze()
+        if max_screen_size:
+            big_points_vs = self.max_radii2D > max_screen_size
+            big_points_ws = self.get_scaling.max(dim=1).values > 0.1 * extent
+            prune_mask = torch.logical_or(torch.logical_or(prune_mask, big_points_vs), big_points_ws)
+        self.prune_points(prune_mask)
+        tmp_radii = self.tmp_radii
+        self.tmp_radii = None
 
-        self.densification_postfix(new_xyz, new_features_dc, new_features_rest,
-                                   new_opacity, new_scaling, new_rotation, new_tmp_radii)
-
-       
+        torch.cuda.empty_cache()
