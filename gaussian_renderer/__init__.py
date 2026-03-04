@@ -1,4 +1,3 @@
-#
 # Copyright (C) 2023, Inria
 # GRAPHDECO research group, https://team.inria.fr/graphdeco
 # All rights reserved.
@@ -14,15 +13,15 @@ import math
 from scene.gaussian_model import GaussianModel
 from utils.sh_utils import eval_sh
 from diff_gaussian_rasterization_fastgs import GaussianRasterizationSettings, GaussianRasterizer
+from utils.graphics_utils import geom_transform_points
 
-def render_fastgs(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, mult, scaling_modifier = 1.0, override_color = None, get_flag=None, metric_map = None, return_2d=False):
+from utils.sh_utils import eval_sh
+
+def render_fastgs(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, mult, scaling_modifier = 1.0, override_color = None, get_flag=None, metric_map = None):
     """
     Render the scene. 
     
     Background tensor (bg_color) must be on GPU!
-    
-    Args:
-        return_2d: 如果为True，返回每个高斯点的2D屏幕坐标和可见点信息
     """
  
     # Create zero tensor. We will use it to make pytorch return gradients of the 2D (screen-space) means
@@ -103,44 +102,87 @@ def render_fastgs(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.T
         rotations = rotations,
         cov3D_precomp = cov3D_precomp)
 
-    result = {
-        "render": rendered_image,
-        "viewspace_points": screenspace_points,
-        "visibility_filter": (radii > 0).nonzero(),
-        "radii": radii,
-        "accum_metric_counts": accum_metric_counts
-    }
-    
-    # 如果需要返回2D坐标，添加屏幕坐标信息（优化版）
-    if return_2d:
-        # screenspace_points 包含每个点的齐次坐标 [x, y, z, w]
-        # 计算归一化设备坐标 (NDC)
-        points_2d = screenspace_points[:, :2] / (screenspace_points[:, 3:4] + 1e-8)
-        result["points_2d_ndc"] = points_2d
-        
-        # 获取可见点的索引
-        visible_indices = (radii > 0).nonzero(as_tuple=True)[0]
-        result["visible_indices"] = visible_indices
-        
-        if len(visible_indices) > 0:
-            # 直接计算可见点的像素坐标（极速版）
-            visible_points_2d = points_2d[visible_indices]
-            H, W = int(viewpoint_camera.image_height), int(viewpoint_camera.image_width)
-            
-            # 一次性计算所有可见点的像素坐标
-            visible_px_x = ((visible_points_2d[:, 0] + 1) / 2 * W).long()
-            visible_px_y = ((visible_points_2d[:, 1] + 1) / 2 * H).long()
-            
-            # 确保坐标在有效范围内
-            visible_px_x = torch.clamp(visible_px_x, 0, W-1)
-            visible_px_y = torch.clamp(visible_px_y, 0, H-1)
-            
-            result["visible_points_px"] = torch.stack([visible_px_x, visible_px_y], dim=1)
-            result["visible_points_2d_ndc"] = visible_points_2d
-            result["visible_count"] = len(visible_indices)
-        else:
-            result["visible_points_px"] = torch.zeros((0, 2), dtype=torch.long, device="cuda")
-            result["visible_points_2d_ndc"] = torch.zeros((0, 2), device="cuda")
-            result["visible_count"] = 0
+    # Those Gaussians that were frustum culled or had a radius of 0 were not visible.
+    # They will be excluded from value updates used in the splitting criteria.
+    return {"render": rendered_image,
+            "viewspace_points": screenspace_points,
+            "visibility_filter" : (radii > 0).nonzero(),
+            "radii": radii,
+            "accum_metric_counts" : accum_metric_counts}
 
-    return result
+
+def render_pointcloud_only(viewpoint_camera, pc, pipe, bg_color, scaling_modifier=1.0):
+    """
+    只渲染高斯中心点云 - 完全复用现有的投影函数
+    """
+    # 获取图像尺寸
+    H = int(viewpoint_camera.image_height)
+    W = int(viewpoint_camera.image_width)
+    
+    # 创建空白图像（背景色）
+    point_image = bg_color.clone().view(3, 1, 1).expand(3, H, W).contiguous()
+    
+    # 获取所有高斯点的世界坐标
+    means3D = pc.get_xyz  # [N, 3]
+    
+    if means3D.shape[0] == 0:
+        print("Warning: No points to render")
+        return {
+            "render": point_image,
+            "point_cloud_info": {
+                "total_points": 0,
+                "visible_points": 0
+            }
+        }
+    
+    
+    points_ndc = geom_transform_points(means3D, viewpoint_camera.full_proj_transform)
+    
+    # 转换为像素坐标
+    # points_ndc 是 [N, 3]，其中 x,y,z 在 [-1, 1] 范围内（NDC空间）
+    pixel_x = ((points_ndc[:, 0] + 1) / 2 * W).long()
+    pixel_y = ((1 - (points_ndc[:, 1] + 1) / 2) * H).long()  # 翻转Y轴
+    
+    # 检查可见性：在NDC范围内且在相机前方
+    in_front = points_ndc[:, 2] > 0
+    in_image = (pixel_x >= 0) & (pixel_x < W) & (pixel_y >= 0) & (pixel_y < H)
+    visible = in_front & in_image
+    
+    visible_indices = torch.where(visible)[0]
+    
+    if len(visible_indices) > 0:
+        visible_px_x = pixel_x[visible_indices]
+        visible_px_y = pixel_y[visible_indices]
+        
+        # 获取可见点的颜色（使用SH系数）
+        visible_xyz = means3D[visible_indices]
+        dir_pp = visible_xyz - viewpoint_camera.camera_center
+        dir_pp_normalized = dir_pp / (dir_pp.norm(dim=1, keepdim=True) + 1e-8)
+        
+        # 使用SH计算颜色
+        from utils.sh_utils import eval_sh
+        features = pc.get_features[visible_indices]
+        if len(features.shape) == 3:
+            shs_view = features.transpose(1, 2).reshape(-1, 3, (pc.max_sh_degree+1)**2)
+            colors = eval_sh(pc.active_sh_degree, shs_view, dir_pp_normalized)
+            colors = torch.clamp_min(colors + 0.5, 0.0)
+        else:
+            colors = features[:, :3] + 0.5
+            colors = torch.clamp_min(colors, 0.0)
+        
+        # 绘制点
+        for i in range(len(visible_indices)):
+            x, y = visible_px_x[i], visible_px_y[i]
+            x, y = int(x), int(y)
+            if 0 <= x < W and 0 <= y < H:
+                point_image[:, y, x] = colors[i]
+    
+    return {
+        "render": point_image,
+        "point_cloud_info": {
+            "total_points": means3D.shape[0],
+            "visible_points": len(visible_indices),
+            "visible_indices": visible_indices,
+            "visible_px_coords": torch.stack([pixel_x[visible_indices], pixel_y[visible_indices]], dim=1) if len(visible_indices) > 0 else torch.zeros((0, 2), device="cuda")
+        }
+    }
