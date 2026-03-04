@@ -54,7 +54,7 @@ class Scene:
             assert False, "Could not recognize scene type!"
 
         if not self.loaded_iter:
-            # 修改：如果提供了init_ply_path，使用指定的PLY文件
+            # 如果提供了init_ply_path，使用指定的PLY文件
             if init_ply_path and os.path.exists(init_ply_path):
                 print(f"Using specified initial point cloud from: {init_ply_path}")
                 # 复制指定的PLY文件到模型路径
@@ -99,7 +99,7 @@ class Scene:
                                                            "iteration_" + str(self.loaded_iter),
                                                            "point_cloud.ply"))
         else:
-            # 修改：根据是否提供了init_ply_path来决定使用哪个点云
+            # 根据是否提供了init_ply_path来决定使用哪个点云
             if init_ply_path and os.path.exists(init_ply_path):
                 # 使用指定的PLY文件创建高斯模型
                 print(f"Creating Gaussians from specified PLY: {init_ply_path}")
