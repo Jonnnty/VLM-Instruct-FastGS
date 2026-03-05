@@ -92,7 +92,7 @@ Organize your single scene dataset as follows:
 ## 🚀 Training
 ### Basic Training Command
 ```bash
-python train.py --source /path/to/your_project --model_path /path/to/output  --qwen_model_path /path/to/Qwen3-VL-2B-Instruct --save_region_vis
+python train.py --source /path/to/your_project --model_path /path/to/output  --qwen_model_path /path/to/Qwen3-VL-2B-Instruct 
 ```
 
 
