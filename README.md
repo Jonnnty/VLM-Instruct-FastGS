@@ -66,7 +66,7 @@ Starting from only 100 random points and after 20,000 iterations, our method, po
 <div align="center"> <table> <tr> <td width="25%"><strong>Method</strong></td> <td width="37.5%"><strong>View 1</strong></td> <td width="37.5%"><strong>View 2</strong></td> </tr> <tr> <td><strong>FastGS</strong></td> <td><img src="assets/before_1.png" width="100%"></td> <td><img src="assets/before_2.png" width="100%"></td> </tr> <tr> <td><strong>VLM-Instruct-FastGS (Ours)</strong></td> <td><img src="assets/after_1.png" width="100%"></td> <td><img src="assets/after_2.png" width="100%"></td> </tr> </table> </div>
 
 ## 📊 Result
-We evaluate our method on the Mip-NeRF 360 dataset, comparing training loss convergence against vanilla FastGS under the same sparse initialization (100 random points)
+We evaluate our method on the Mip-NeRF 360 dataset, comparing Gaussian count and training loss convergence against vanilla FastGS under the same sparse initialization (100 random points, 20,000 iterations).
 
 <div align="center">
   <table style="width:100%; border-collapse: collapse;">
@@ -80,9 +80,8 @@ We evaluate our method on the Mip-NeRF 360 dataset, comparing training loss conv
     </tr>
   </table>
   <br>
-  <em>Training loss comparison on Mip-NeRF 360 dataset</em>
+  <em>Comparison of Gaussian count and training loss on Mip-NeRF 360 dataset.</em>
 </div>
-
 Phase 1 (0–8,000 iterations): Rapidly reconstructs main scene subjects.
 
 Phase 2 (8,000–14,000 iterations): Background Completion – Identifies and inverts main subject masks to target background areas, perfecting comprehensive scene coverage beyond foreground objects.
