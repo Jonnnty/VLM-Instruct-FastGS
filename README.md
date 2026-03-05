@@ -68,7 +68,20 @@ Starting from only 100 random points and after 20,000 iterations, our method, po
 ## 📊 Result
 We evaluate our method on the Mip-NeRF 360 dataset, comparing training loss convergence against vanilla FastGS under the same sparse initialization (100 random points)
 
-<div align="center"> <img src="assets/Figure_1.png" width="80%"><br> <img src="assets/Figure_2.png" width="80%"><br> <img src="assets/Figure_3.png" width="80%"><br> <em>Training loss comparison on Mip-NeRF 360 dataset</em> </div>
+<div align="center">
+  <table style="width:100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 2px; border: none; width: 50%;"><img src="assets/Figure_1.png" width="100%"></td>
+      <td style="padding: 2px; border: none; width: 50%;"><img src="assets/Figure_2.png" width="100%"></td>
+    </tr>
+    <tr>
+      <td style="padding: 2px; border: none; width: 50%;"><img src="assets/Figure_3.png" width="100%"></td>
+      <td style="padding: 2px; border: none; width: 50%;"><img src="assets/Figure_4.png" width="100%"></td>
+    </tr>
+  </table>
+  <br>
+  <em>Training loss comparison on Mip-NeRF 360 dataset</em>
+</div>
 
 Phase 1 (0–8,000 iterations): Rapidly reconstructs main scene subjects.
 
