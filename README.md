@@ -82,11 +82,13 @@ We evaluate our method on the Mip-NeRF 360 dataset, comparing Gaussian count and
   <br>
    <em>Comparison of Gaussian count (upper subplot) and training loss (lower subplot) on Mip-NeRF 360 dataset. Our method (orange) outperforms vanilla FastGS (blue) in both loss convergence and Gaussian distribution efficiency.</em>
 </div>
-Phase 1 (0–8,000 iterations): Rapidly reconstructs main scene subjects.
+During training, we split the whole optimization process into two sequential stages.
+The first stage (0–4000 iterations) corresponds to Phase 0, which focuses on fast reconstruction of the central main region.
+The second stage (4000–20000 iterations) corresponds to Phase 1, where we employ an **oblique hollow elliptical tube** to enclose the main subject for effective ambient initialization and full-scene completion.
 
-Phase 2 (8,000–14,000 iterations): Background Completion – Identifies and inverts main subject masks to target background areas, perfecting comprehensive scene coverage beyond foreground objects.
+As observed from the comparisons, under sparse input conditions, our method achieves comparable or better training loss with fewer Gaussian primitives than vanilla FastGS, demonstrating higher efficiency in 3D scene representation.
 
-Pruning & Refinement (14,000–20,000 iterations):  Prunes redundant Gaussians to reduce computational burden.
+Note: The above curves only reflect the reconstruction process of Phase 0 and Phase 1, without involving the VLM-guided targeted optimization in Phase 2.
 
 ## 🛠️ Preparation
 ### Download VLM Model
