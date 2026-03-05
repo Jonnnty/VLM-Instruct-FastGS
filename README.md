@@ -65,7 +65,7 @@ Starting from only 100 random points and after 20,000 iterations, our method, po
 
 <div align="center"> <table> <tr> <td width="25%"><strong>Method</strong></td> <td width="37.5%"><strong>View 1</strong></td> <td width="37.5%"><strong>View 2</strong></td> </tr> <tr> <td><strong>FastGS</strong></td> <td><img src="assets/before_1.png" width="100%"></td> <td><img src="assets/before_2.png" width="100%"></td> </tr> <tr> <td><strong>VLM-Instruct-FastGS (Ours)</strong></td> <td><img src="assets/after_1.png" width="100%"></td> <td><img src="assets/after_2.png" width="100%"></td> </tr> </table> </div>
 
-## 📊 Result
+## 📈 Result
 We evaluate our method on the Mip-NeRF 360 dataset, comparing Gaussian count and training loss convergence against vanilla FastGS under the same sparse initialization (100 random points, 20,000 iterations).
 
 <div align="center">
