@@ -51,7 +51,6 @@ from utils.geometry_utils import (
     compute_frustum_outside_loss
 )
 from utils.pruning_utils import prune_large_gaussians, update_mask_to_current_size
-from utils.camera_utils import get_uniform_camera_indices
 from utils.phase2_loss import compute_phase2_weighted_loss, save_phase2_comparison
 
 # ===== Qwen3-VL导入 =====
