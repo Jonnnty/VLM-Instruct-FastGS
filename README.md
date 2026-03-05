@@ -80,7 +80,7 @@ We evaluate our method on the Mip-NeRF 360 dataset, comparing Gaussian count and
     </tr>
   </table>
   <br>
-   <em>Comparison of Gaussian count (upper subplot) and training loss (lower subplot) on Mip-NeRF 360 dataset. Our method (orange) outperforms vanilla FastGS (blue) in both loss convergence and Gaussian distribution efficiency.</em>
+   <em>Comparison of Gaussian count (upper subplot) and training loss (lower subplot) on Mip-NeRF 360 dataset. Orange: Ours; Blue: FastGS.</em>
 </div>
 
 The curves visualize the first two stages of our pipeline:
