@@ -89,7 +89,7 @@ The first stage (0–4000 iterations) corresponds to Phase 0, which focuses on f
 
 The second stage (4000–20000 iterations) corresponds to Phase 1, where we employ an <strong>oblique hollow elliptical tube</strong> to enclose the main subject for effective ambient initialization and full-scene completion.
 
-As observed from the comparisons, under sparse input conditions, our method achieves comparable or better training loss with fewer Gaussian primitives than vanilla FastGS, demonstrating higher efficiency in 3D scene representation.
+As observed from the comparisons, under sparse input conditions, our method achieves comparable training loss with fewer Gaussian primitives than vanilla FastGS, demonstrating higher efficiency in 3D scene representation.
 
 Note: The above curves only reflect the reconstruction process of Phase 0 and Phase 1, without involving the VLM-guided targeted optimization in Phase 2.
 
