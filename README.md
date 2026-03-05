@@ -43,6 +43,11 @@ The following table illustrates the progressive reconstruction process: starting
   </table> 
 </div>
 
+### Hollow Elliptical Tube Initialization:
+### We propose to wrap the main subject with a hollow elliptical tube for surrounding environment initialization.
+#### a. It covers not only the surrounding areas but also the sky/ceiling and ground.
+#### b. Compared with full box-shaped enclosing strategies, it keeps the subject visible in partial views.
+
 ## 📊 Performance Comparison
 Starting from only 100 random points and after 20,000 iterations, our method, powered by the [Qwen3-VL-2B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct) vision-language model, demonstrates significantly more complete scene reconstruction:
 
