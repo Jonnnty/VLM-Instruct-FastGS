@@ -18,8 +18,7 @@ def prune_large_gaussians(gaussians, scale_multiplier=3.0):
             print("  - No Gaussians to prune")
             return 0
             
-        # 获取所有高斯的缩放（三个轴）
-        # scaling是log scale，需要先exp得到实际值
+       
         scales = torch.exp(gaussians._scaling)  # [N, 3]
         
         # 对于每个高斯，取最长的轴
