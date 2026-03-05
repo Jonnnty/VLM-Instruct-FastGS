@@ -11,6 +11,38 @@ VLM-Instruct-FastGS enhances 3D Gaussian Splatting by incorporating semantic gui
   
 By progressively conducting subject-centric reconstruction, ambient initialization, and semantic-aware refinement, our framework effectively improves the completeness and quality of 3D scene reconstruction, especially under sparse inputs and in early training phases.
 
+## 🔍 More Details
+The following table illustrates the progressive reconstruction process of Phase 0 and Phase 1 across different iterations, with a focus on the impact of hollow elliptical tube initialization:
+
+<div align="center"> 
+  <table> 
+    <tr> 
+      <td width="20%"></td> <!-- 留空单元格 -->
+      <td width="16%"><strong>Result from Phase 0</strong></td> 
+      <td width="16%"><strong>Hollow Elliptical Tube Initialization</strong></td> 
+      <td width="16%"><strong>Phase 1 (1000 iters)</strong></td> 
+      <td width="16%"><strong>Phase 1 (2000 iters)</strong></td> 
+      <td width="16%"><strong>Phase 1 (3000 iters)</strong></td> 
+    </tr> 
+    <tr> 
+      <td><strong>Mip-NeRF360/garden</strong></td> 
+      <td><img src="assets/phase1-1.1.png" width="100%"></td> 
+      <td><img src="assets/phase1-1.2.png" width="100%"></td> 
+      <td><img src="assets/phase1-1.3.png" width="100%"></td> 
+      <td><img src="assets/phase1-1.4.png" width="100%"></td> 
+      <td><img src="assets/phase1-1.5.png" width="100%"></td> 
+    </tr> 
+    <tr> 
+      <td><strong>Mip-NeRF360/counter</strong></td> 
+      <td><img src="assets/phase1-2.1.png" width="100%"></td> 
+      <td><img src="assets/phase1-2.2.png" width="100%"></td> 
+      <td><img src="assets/phase1-2.3.png" width="100%"></td> 
+      <td><img src="assets/phase1-2.4.png" width="100%"></td> 
+      <td><img src="assets/phase1-2.5.png" width="100%"></td> 
+    </tr> 
+  </table> 
+</div>
+
 ## 📊 Performance Comparison
 Starting from only 100 random points and after 20,000 iterations, our method, powered by the [Qwen3-VL-2B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct) vision-language model, demonstrates significantly more complete scene reconstruction:
 
