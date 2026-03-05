@@ -43,7 +43,7 @@ The following table illustrates the progressive reconstruction process: starting
   </table> 
 </div>
 
-### Hollow Elliptical Tube Initialization:
+### Oblique Hollow Elliptical Tube Initialization:
 ### We propose to wrap the main subject with a hollow elliptical tube for surrounding environment initialization.
 #### a. It covers not only the surrounding areas but also the sky/ceiling and ground.
 #### b. Compared with full box-shaped enclosing strategies, it keeps the subject visible in partial views.
@@ -82,7 +82,8 @@ We evaluate our method on the Mip-NeRF 360 dataset, comparing Gaussian count and
   <br>
    <em>Comparison of Gaussian count (upper subplot) and training loss (lower subplot) on Mip-NeRF 360 dataset. Our method (orange) outperforms vanilla FastGS (blue) in both loss convergence and Gaussian distribution efficiency.</em>
 </div>
-During training, we split the whole optimization process into two sequential stages.
+
+The curves visualize the first two stages of our pipeline:
 
 The first stage (0–4000 iterations) corresponds to Phase 0, which focuses on fast reconstruction of the central main region.
 
