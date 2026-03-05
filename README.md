@@ -48,6 +48,17 @@ The following table illustrates the progressive reconstruction process: starting
 #### a. It covers not only the surrounding areas but also the sky/ceiling and ground.
 #### b. Compared with full box-shaped enclosing strategies, it keeps the subject visible in partial views.
 
+<br>
+<div align="center">
+  <img src="assets/phase2-1.jpg" width="80%">
+  <br><br>
+  <img src="assets/phase2-2.jpg" width="80%">
+</div>
+<br>
+
+##### Phase 2: VLM-Guided Targeted Optimization
+Phase 2 leverages Vision-Language Models (VLMs) to detect underperforming regions in rendered images, and then performs targeted optimization on these regions to further improve the overall scene reconstruction quality.
+
 ## 📊 Performance Comparison
 Starting from only 100 random points and after 20,000 iterations, our method, powered by the [Qwen3-VL-2B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct) vision-language model, demonstrates significantly more complete scene reconstruction:
 
