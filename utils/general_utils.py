@@ -14,6 +14,8 @@ import sys
 from datetime import datetime
 import numpy as np
 import random
+from plyfile import PlyData, PlyElement
+import gc
 
 def identity_gate(x):
     return x
@@ -134,3 +136,104 @@ def safe_state(silent):
     np.random.seed(0)
     torch.manual_seed(0)
     torch.cuda.set_device(torch.device("cuda:0"))
+
+def safe_tensor_1d(tensor, expected_len=None):
+    """确保tensor是1维且长度正确"""
+    if tensor is None:
+        return torch.zeros(expected_len if expected_len else 0, dtype=bool, device="cuda") if expected_len else None
+    
+    # 检查是否为0维张量（标量）
+    if tensor.dim() == 0:
+        # 0维tensor转换为1维（长度为1的tensor）
+        tensor = tensor.unsqueeze(0)
+    elif tensor.dim() > 1:
+        # 如果维度大于1，尝试压缩
+        tensor = tensor.squeeze()
+        # 如果压缩后还是大于1维，取第一个维度
+        if tensor.dim() > 1:
+            tensor = tensor.flatten()
+    
+    # 确保现在是一维的
+    if tensor.dim() != 1:
+        tensor = tensor.flatten()
+    
+    # 处理长度不匹配的情况
+    if expected_len is not None and len(tensor) != expected_len:
+        new_tensor = torch.zeros(expected_len, dtype=tensor.dtype, device=tensor.device)
+        copy_len = min(len(tensor), expected_len)
+        if len(tensor) > 0:
+            new_tensor[:copy_len] = tensor[:copy_len]
+        tensor = new_tensor
+    
+    return tensor
+
+def save_gaussian_to_ply(gaussians, save_path):
+    """保存高斯点云到PLY文件"""
+    print(f"Saving Gaussian point cloud to {save_path}")
+    
+    xyz = gaussians._xyz.detach().cpu().numpy()
+    normals = np.zeros_like(xyz)
+    
+    # 获取特征
+    features_dc = gaussians._features_dc.detach().transpose(1, 2).flatten(start_dim=1).cpu().numpy()
+    
+    # 获取其他属性
+    opacities = gaussians._opacity.detach().cpu().numpy()
+    scales = gaussians._scaling.detach().cpu().numpy()
+    rotations = gaussians._rotation.detach().cpu().numpy()
+    
+    # 创建PLY属性
+    dtype_full = [(attribute, 'f4') for attribute in ['x', 'y', 'z', 'nx', 'ny', 'nz']]
+    
+    # 添加特征属性
+    for i in range(features_dc.shape[1]):
+        dtype_full.append((f'f_dc_{i}', 'f4'))
+    
+    # 添加不透明度
+    dtype_full.append(('opacity', 'f4'))
+    
+    # 添加缩放
+    for i in range(scales.shape[1]):
+        dtype_full.append((f'scale_{i}', 'f4'))
+    
+    # 添加旋转
+    for i in range(rotations.shape[1]):
+        dtype_full.append((f'rot_{i}', 'f4'))
+    
+    # 构建元素
+    elements = np.empty(xyz.shape[0], dtype=dtype_full)
+    elements['x'] = xyz[:, 0]
+    elements['y'] = xyz[:, 1]
+    elements['z'] = xyz[:, 2]
+    elements['nx'] = normals[:, 0]
+    elements['ny'] = normals[:, 1]
+    elements['nz'] = normals[:, 2]
+    
+    # 填充特征
+    for i in range(features_dc.shape[1]):
+        elements[f'f_dc_{i}'] = features_dc[:, i]
+    
+    elements['opacity'] = opacities[:, 0]
+    
+    for i in range(scales.shape[1]):
+        elements[f'scale_{i}'] = scales[:, i]
+    
+    for i in range(rotations.shape[1]):
+        elements[f'rot_{i}'] = rotations[:, i]
+    
+    # 保存PLY
+    plydata = PlyData([PlyElement.describe(elements, 'vertex')], text=False)
+    plydata.write(save_path)
+    print(f"Saved {xyz.shape[0]} Gaussian points to {save_path}")
+
+def print_cuda_memory():
+    """打印CUDA显存使用情况"""
+    if torch.cuda.is_available():
+        allocated = torch.cuda.memory_allocated() / 1024 ** 2
+        cached = torch.cuda.memory_reserved() / 1024 ** 2
+        print(f"CUDA Memory - Allocated: {allocated:.2f} MB, Cached: {cached:.2f} MB")
+
+def clear_cuda_cache():
+    """清理CUDA缓存"""
+    torch.cuda.empty_cache()
+    gc.collect()
