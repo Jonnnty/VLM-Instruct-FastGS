@@ -3,13 +3,13 @@
 ### 🚧 Still under editing...
 
 ## 📌 Overview
-VLM-Instruct-FastGS enhances 3D Gaussian Splatting by incorporating semantic guidance from Vision-Language Models (VLMs) into the densification process. Under the same sparse initialization and within the same number of iterations, our method achieves more complete scene reconstruction through a multi-stage semantic guidance strategy:
+VLM-Instruct-FastGS enhances 3D Gaussian Splatting by incorporating semantic guidance from Vision-Language Models (VLMs) into the densification process. Under the same sparse initialization and within the same number of iterations, our method achieves more complete scene reconstruction via a semantic guidance strategy:
 
-- **Phase 1: Accelerated Detail Formation** – Identifies regions that are beginning to show texture detail, accelerating the reconstruction of main subjects during early training.
-- **Phase 2: Background Completion** – Detects main subject regions using VLM understanding, then inverts these masks to obtain background areas requiring enhancement, ensuring full scene coverage.
-- **Phase 3: Novel View Refinement** – Analyzes renders from unseen viewpoints to identify inconsistent or under-reconstructed regions, further improving rendering quality across the entire scene.
-
-This semantic-aware approach enables comprehensive scene reconstruction without requiring additional iterations or manual annotation—with its advantages being particularly pronounced under random sparse initialization and during early training stages.
+- **Phase 0: Early Main Region Reconstruction** – Quickly establishes the primary scene region from multi-view cues at the initial stage.
+- **Phase 1: Ambient Initialization and Background Completion** – Wraps the main subject with an oblique hollow elliptical tube for environment initialization and subsequent background training, covering ceilings/sky and ground while keeping the subject visible in partial views.
+- **Phase 2: VLM-Guided Targeted Optimization** – Leverages VLMs to identify underperforming regions in rendered images, enabling targeted refinement for enhanced scene quality.
+  
+By progressively conducting subject-centric reconstruction, ambient initialization, and semantic-aware refinement, our framework effectively improves the completeness and quality of 3D scene reconstruction, especially under sparse inputs and in early training phases.
 
 ## 📊 Performance Comparison
 Starting from only 100 random points and after 20,000 iterations, our method, powered by the [Qwen3-VL-2B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct) vision-language model, demonstrates significantly more complete scene reconstruction:
