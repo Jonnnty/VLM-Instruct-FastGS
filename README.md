@@ -80,7 +80,7 @@ We evaluate our method on the Mip-NeRF 360 dataset, comparing Gaussian count and
     </tr>
   </table>
   <br>
-  <em>Comparison of Gaussian count and training loss on Mip-NeRF 360 dataset.</em>
+   <em>Comparison of Gaussian count (upper subplot) and training loss (lower subplot) on Mip-NeRF 360 dataset. Our method (orange) outperforms vanilla FastGS (blue) in both loss convergence and Gaussian distribution efficiency.</em>
 </div>
 Phase 1 (0–8,000 iterations): Rapidly reconstructs main scene subjects.
 
