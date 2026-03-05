@@ -92,67 +92,9 @@ Organize your single scene dataset as follows:
 ## 🚀 Training
 ### Basic Training Command
 ```bash
-python train.py --source_path /path/to/your_project --model_path /path/to/output  --qwen_model_path /path/to/Qwen3-VL-2B-Instruct --save_region_vis
+python train.py --source /path/to/your_project --model_path /path/to/output  --qwen_model_path /path/to/Qwen3-VL-2B-Instruct --save_region_vis
 ```
-### ⚠️ Note:
 
-1.VLM inference introduces computational overhead—carefully balance phase intervals and sampling frequency to maintain efficiency.
-
-2.VLM predictions may produce overestimated region masks, potentially causing explosive Gaussian growth. Set appropriate max points limits per phase to control density.
-### 📋 Command Line Arguments for train.py
-
-<details>
-<summary> Semantic Guidance</summary>
-
-##### --semantic_num_samples
-Number of images to analyze each time 
-
-</details>
-
-<details>
-<summary> Phase 1: Accelerated Detail Formation</summary>
-
-##### --phase1_start
-Phase 1 start iteration 
-
-##### --phase1_end
-Phase 1 end iteration 
-
-##### --phase1_interval
-Phase 1 interval between analyses 
-
-##### --phase1_max_points
-Phase 1 max points per view 
-
-</details>
-
-<details>
-<summary> Phase 2: Background Completion</summary>
-
-##### --phase2_start
-Phase 2 start iteration 
-
-##### --phase2_end
-Phase 2 end iteration 
-
-##### --phase2_interval
-Phase 2 interval between analyses
-
-##### --phase2_max_points
-Phase 2 max points per view 
-
-</details>
-
-<details>
-<summary> Pruning & Refinement</summary>
-
-##### --prune_protection
-Iterations to protect after Phase 2 before pruning 
-
-##### --total_iterations
-Total training iterations 
-
-</details>
 
 ## 🙏 Acknowledgements
 This project is built upon [3DGS](https://github.com/graphdeco-inria/gaussian-splatting), [FastGS](https://github.com/fastgs/FastGS/tree/main?tab=readme-ov-file), and [Qwen3-VL-2B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct). We extend our gratitude to all the authors for their outstanding contributions and excellent repositories!
