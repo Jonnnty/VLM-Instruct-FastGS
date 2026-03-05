@@ -53,10 +53,11 @@ The following table illustrates the progressive reconstruction process: starting
   <img src="assets/phase2-1.jpg" width="80%">
   <br><br>
   <img src="assets/phase2-2.jpg" width="80%">
+  <br><br>
+  <strong>Phase 2: VLM-Guided Targeted Optimization</strong>
 </div>
 <br>
 
-##### Phase 2: VLM-Guided Targeted Optimization
 Phase 2 leverages Vision-Language Models (VLMs) to detect underperforming regions in rendered images, and then performs targeted optimization on these regions to further improve the overall scene reconstruction quality.
 
 ## 📊 Performance Comparison
