@@ -12,7 +12,7 @@ VLM-Instruct-FastGS enhances 3D Gaussian Splatting by incorporating semantic gui
 By progressively conducting subject-centric reconstruction, ambient initialization, and semantic-aware refinement, our framework effectively improves the completeness and quality of 3D scene reconstruction, especially under sparse inputs and in early training phases.
 
 ## 🔍 More Details
-The following table illustrates the progressive reconstruction process of Phase 0 and Phase 1 across different iterations, with a focus on the impact of hollow elliptical tube initialization:
+The following table illustrates the progressive reconstruction process: starting from the output of Phase 0, we apply Hollow Elliptical Tube Initialization to initialize the surrounding environment, followed by the evolution of Phase 1 reconstruction across different iterations. It highlights the effectiveness of our proposed initialization strategy:
 
 <div align="center"> 
   <table> 
